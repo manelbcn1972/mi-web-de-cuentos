@@ -84,12 +84,10 @@ auth.onAuthStateChanged(user => {
 loginBtn.addEventListener('click', () => { auth.signInWithRedirect(provider).catch(error => { console.error("Error during sign in:", error); }); });
 userProfile.addEventListener('click', () => { logoutDropdown.classList.toggle('hidden'); });
 logoutBtn.addEventListener('click', (e) => { e.preventDefault(); auth.signOut().catch(error => console.error("Error during sign out:", error)); });
+
 document.addEventListener('DOMContentLoaded', () => {
     storyPagesData = preloadedStory.pages;
     renderEbook(preloadedStory.title, storyPagesData);
-    setLoading(false);
-    ebookContent.style.display = 'block';
-    if(loadingView) loadingView.style.display = 'none';
 });
 
 function setLoading(isLoading, message = '') {
@@ -97,8 +95,8 @@ function setLoading(isLoading, message = '') {
     const btnLoader = document.getElementById('btn-loader');
     if (generateBtn) {
         generateBtn.disabled = isLoading;
-        if(btnText) btnText.classList.toggle('hidden', isLoading);
-        if(btnLoader) btnLoader.classList.toggle('hidden', !isLoading);
+        if(btnText) btnText.parentElement.querySelector('span').style.display = isLoading ? 'none' : 'inline';
+        if(btnLoader) btnLoader.style.display = isLoading ? 'inline-block' : 'none';
     }
     if (isLoading) {
         ebookPlaceholder.style.display = 'none';
@@ -134,9 +132,88 @@ function renderEbook(title, pagesData) {
     document.getElementById('download-pdf-btn').addEventListener('click', () => downloadPDF(title));
     document.getElementById('open-flipbook-btn').addEventListener('click', () => openFlipbook(title));
 }
-// El resto de las funciones...
-function updatePage() { /* ... */ }
-function prevPage() { /* ... */ }
-function nextPage() { /* ... */ }
-function handleStoryGeneration(event, predefinedData) { /* ... */ }
+
+function updatePage() { 
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const currentPageElement = document.getElementById(`page-${currentPage}`);
+    if (currentPageElement) {
+        currentPageElement.classList.add('active');
+    }
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    if(prevBtn) prevBtn.disabled = currentPage === 0;
+    if(nextBtn) nextBtn.disabled = currentPage === totalPages - 1;
+    const pageIndicator = document.getElementById('page-indicator');
+    if(pageIndicator) pageIndicator.textContent = currentPage === 0 ? 'Portada' : `Página ${currentPage} de ${totalPages - 1}`;
+}
+function prevPage() { if (currentPage > 0) { currentPage--; updatePage(); } }
+function nextPage() { if (currentPage < totalPages - 1) { currentPage++; updatePage(); } }
+async function handleStoryGeneration(event, predefinedData = null) {
+    if(event) event.preventDefault();
+    setLoading(true, "Iniciando la magia...");
+    ebookContent.innerHTML = '';
+    let storyData;
+    if (predefinedData) {
+        storyData = predefinedData;
+    } else {
+        const formData = new FormData(storyForm);
+        const petImageFile = formData.get('pet_image');
+        let petDescription = formData.get('character_desc');
+        if (petImageFile && petImageFile.size > 0) {
+            setLoading(true, "Analizando la foto de tu mascota...");
+            const imageBase64 = await readFileAsBase64(petImageFile);
+            const analysisResult = await analyzePetImage(imageBase64);
+            if (!analysisResult.isPet) {
+                displayError("La imagen no parece contener una mascota. Por favor, sube otra foto.");
+                setLoading(false);
+                return;
+            }
+            petDescription = analysisResult.description;
+        }
+        if (!petDescription) {
+            displayError("Por favor, sube una foto de tu mascota o proporciona una descripción.");
+            setLoading(false);
+            return;
+        }
+        storyData = {
+            character: formData.get('character'),
+            character_desc: petDescription,
+            setting: formData.get('setting'),
+            plot: formData.get('plot'),
+            style: formData.get('style'),
+            visual_modifier: formData.get('visual_modifier'),
+            reading_level: formData.get('reading_level'),
+        };
+    }
+    try {
+        setLoading(true, "Escribiendo tu aventura...");
+        const story = await generateStoryText(storyData);
+        if (!story.parrafos || story.parrafos.length === 0) {
+            throw new Error("La IA no generó párrafos para la historia.");
+        }
+        const visualModifiers = {
+            'variado': ['plano general amplio', 'primer plano emocional del personaje', 'toma de acción dinámica', 'vista desde un ángulo bajo', 'vista desde arriba', 'iluminación suave y cálida', 'silueta contra el atardecer', 'plano medio del personaje interactuando'],
+            'planos cercanos': ['primer plano del personaje', 'plano medio mostrando la expresión', 'detalle de las patas del personaje', 'mirada por encima del hombro'],
+            'planos generales': ['plano general muy amplio mostrando el paisaje', 'vista panorámica', 'el personaje es pequeño en la escena', 'vista de pájaro']
+        };
+        const selectedModifierSet = visualModifiers[storyData.visual_modifier] || visualModifiers['variado'];
+        setLoading(true, `Creando ilustraciones... (0/${story.parrafos.length})`);
+        const pages = [];
+        for (let i = 0; i < story.parrafos.length; i++) {
+            const paragraph = story.parrafos[i];
+            const randomModifier = selectedModifierSet[Math.floor(Math.random() * selectedModifierSet.length)];
+            const imagePrompt = `Ilustración para un libro de cuentos (${storyData.reading_level}) con un ${storyData.style}. El personaje principal es ${storyData.character}, que es ${storyData.character_desc}. La escena describe: "${paragraph}". Estilo visual: ${randomModifier}. Personaje consistente, sin texto.`;
+            const imageUrl = await generateImage(imagePrompt);
+            pages.push({ text: paragraph, imageUrl: imageUrl });
+            setLoading(true, `Creando ilustraciones... (${i + 1}/${story.parrafos.length})`);
+        }
+        storyPagesData = pages;
+        renderEbook(story.titulo, pages);
+    } catch (error) {
+        console.error("Error generating story:", error);
+        displayError(error.message || "No se pudo generar el cuento. Inténtalo de nuevo.");
+    } finally {
+        setLoading(false);
+    }
+}
 // etc...
