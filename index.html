@@ -9,9 +9,6 @@
     <!-- PDF & Flipbook Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
         .font-brand { font-family: 'Baloo 2', cursive; }
@@ -19,7 +16,7 @@
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         .loader-small { border: 3px solid rgba(255, 255, 255, 0.3); border-top: 3px solid #fff; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #flipbook-modal { background-color: rgba(0,0,0,0.7); }
+        #flipbook-modal { background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
         .flipbook { width: 90vw; height: 60vw; max-width: 1200px; max-height: 800px; perspective: 2500px; }
         .flipbook .fb-page { position: absolute; width: 50%; height: 100%; top: 0; right: 0; transform-origin: left; transition: transform 1s ease-in-out; transform-style: preserve-3d; cursor: pointer; }
         .flipbook .fb-page .fb-front, .flipbook .fb-page .fb-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; }
@@ -122,10 +119,11 @@
   measurementId: "G-D4Y7D0VDSW"
 };
 
+
         // ----------------------------------------------------------------
         // --- PASO CLAVE 2: Tu clave de API de Google AI Studio ---
         // ----------------------------------------------------------------
-        const googleApiKey = "AIzaSyBr3ANRwaE3WFwLgfFVi8qvWf5sESdJPAA";
+       const googleApiKey = "AIzaSyBr3ANRwaE3WFwLgfFVi8qvWf5sESdJPAA";
 
 
         // --- INICIO DEL CÓDIGO DE LA APLICACIÓN ---
@@ -169,35 +167,57 @@
 
             // --- Authentication Logic ---
             try {
-                firebase.initializeApp(firebaseConfig);
-                const auth = firebase.auth();
-                const provider = new firebase.auth.GoogleAuthProvider();
+                if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("AQUI_VA")) {
+                    console.warn("Firebase no está configurado. El inicio de sesión será simulado.");
+                    setupSimulatedAuth();
+                } else {
+                    firebase.initializeApp(firebaseConfig);
+                    const auth = firebase.auth();
+                    const provider = new firebase.auth.GoogleAuthProvider();
 
-                auth.onAuthStateChanged(user => {
-                    updateLoginUI(user);
-                });
-
-                loginBtn.addEventListener('click', () => {
-                     auth.signInWithRedirect(provider).catch(error => {
-                        if (error.code === 'auth/operation-not-supported-in-this-environment') {
-                            alert('El inicio de sesión con Google no es compatible en este entorno. Funcionará en un sitio web publicado (como GitHub Pages).');
-                        } else {
-                            console.error("Error durante el inicio de sesión:", error);
-                        }
+                    auth.onAuthStateChanged(user => {
+                        updateLoginUI(user);
                     });
-                });
-                
-                userProfile.addEventListener('click', () => {
-                    logoutDropdown.classList.toggle('hidden');
-                });
 
+                    loginBtn.addEventListener('click', () => {
+                         auth.signInWithRedirect(provider).catch(error => {
+                            if (error.code === 'auth/operation-not-supported-in-this-environment') {
+                                alert('El inicio de sesión con Google no es compatible en este entorno. Funcionará en un sitio web publicado (como GitHub Pages).');
+                            } else {
+                                console.error("Error durante el inicio de sesión:", error);
+                            }
+                        });
+                    });
+                    
+                    userProfile.addEventListener('click', () => {
+                        logoutDropdown.classList.toggle('hidden');
+                    });
+
+                    logoutBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        auth.signOut().catch(error => console.error("Error durante el cierre de sesión:", error));
+                    });
+                }
+            } catch (error) {
+                 console.error("Error al inicializar Firebase:", error.message);
+                 displayError("No se pudo conectar con el sistema de usuarios. Revisa la configuración de Firebase en el código.");
+            }
+            
+            function setupSimulatedAuth() {
+                loginBtn.addEventListener('click', () => {
+                    const fakeUser = {
+                        displayName: 'Manel',
+                        photoURL: 'https://placehold.co/100x100/A0E8D5/333333?text=M'
+                    };
+                    updateLoginUI(fakeUser);
+                });
                 logoutBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    auth.signOut().catch(error => console.error("Error durante el cierre de sesión:", error));
+                    updateLoginUI(null);
                 });
-            } catch (error) {
-                 console.error("Error al inicializar Firebase. Revisa tu `firebaseConfig`.", error);
-                 displayError("No se pudo conectar con el sistema de usuarios. Revisa la configuración de Firebase.");
+                 userProfile.addEventListener('click', () => {
+                    logoutDropdown.classList.toggle('hidden');
+                });
             }
             
             function updateLoginUI(user) {
@@ -303,6 +323,12 @@
 
             async function handleStoryGeneration(event, predefinedData = null) {
                 if(event) event.preventDefault();
+
+                if (!googleApiKey || googleApiKey.includes("AQUI_VA")) {
+                    displayError("La clave de API de Google AI no está configurada. Por favor, edita el código para añadirla.");
+                    return;
+                }
+
                 setLoading(true, "Iniciando la magia...");
                 ebookContent.innerHTML = '';
                 let storyData;
@@ -401,18 +427,12 @@
             }
 
             async function generateImage(prompt) {
-                const payload = { instances: [{ prompt }], parameters: { "sampleCount": 1 } };
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${googleApiKey}`;
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (!response.ok) {
-                    const errorMessage = await handleApiError(response);
-                    throw new Error(`Error en la API de imagen: ${errorMessage}`);
-                }
-                const result = await response.json();
-                if (result.predictions && result.predictions[0]?.bytesBase64Encoded) {
-                    return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
-                }
-                throw new Error("No se pudo generar la ilustración.");
+                // SIMULACIÓN: Devuelve una imagen de marcador de posición para evitar el error de la API de pago.
+                console.log(`Simulando generación de imagen para el prompt: "${prompt}"`);
+                await new Promise(resolve => setTimeout(resolve, 200)); 
+                const randomColor1 = Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+                const randomColor2 = Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+                return `https://placehold.co/600x400/${randomColor1}/${randomColor2}?text=Ilustración`;
             }
             
             function renderEbook(title, pagesData) {
@@ -448,11 +468,153 @@
             }
             function prevPage() { if (currentPage > 0) { currentPage--; updatePage(); } }
             function nextPage() { if (currentPage < totalPages - 1) { currentPage++; updatePage(); } }
-            function openFlipbook(title) { /* ... */ }
-            async function downloadPDF(title) { /* ... */ }
-            function readFileAsBase64(file) { /* ... */ }
-            async function handlePlotSuggestion() { /* ... */ }
+            function openFlipbook(title) { 
+                flipbookContainer.innerHTML = '';
+                const cover = document.createElement('div');
+                cover.className = 'absolute w-1/2 h-full top-0 left-0 bg-pink-500 text-white p-8 rounded-lg flex items-center justify-center';
+                cover.innerHTML = `<div class="text-center"><h3 class="font-brand text-4xl">${title}</h3><p class="mt-4 opacity-80">Un cuento generado por IA</p></div>`;
+                flipbookContainer.appendChild(cover);
+                let zIndex = storyPagesData.length;
+                storyPagesData.forEach((pageData, index) => {
+                    const pageNum = index + 1;
+                    if (pageNum % 2 !== 0) { 
+                        const fbPage = document.createElement('div');
+                        fbPage.className = 'fb-page';
+                        fbPage.style.zIndex = zIndex--;
+                        const front = document.createElement('div');
+                        front.className = 'fb-front bg-white';
+                        front.innerHTML = `<div class="w-full h-full grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg border"><div class="flex items-center justify-center bg-gray-100 rounded-md overflow-hidden"><img src="${pageData.imageUrl}" class="w-full h-full object-cover"></div><div class="flex items-center p-4"><p class="text-gray-700 leading-relaxed">${pageData.text}</p></div></div>`;
+                        const back = document.createElement('div');
+                        back.className = 'fb-back bg-white';
+                        if (storyPagesData[pageNum]) {
+                             back.innerHTML = `<div class="w-full h-full grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg border"><div class="flex items-center justify-center bg-gray-100 rounded-md overflow-hidden"><img src="${storyPagesData[pageNum].imageUrl}" class="w-full h-full object-cover"></div><div class="flex items-center p-4"><p class="text-gray-700 leading-relaxed">${storyPagesData[pageNum].text}</p></div></div>`;
+                        } else {
+                             back.innerHTML = `<div class="w-full h-full bg-gray-100 p-4 rounded-lg border flex items-center justify-center"><p>Fin</p></div>`;
+                        }
+                        fbPage.appendChild(front);
+                        fbPage.appendChild(back);
+                        flipbookContainer.appendChild(fbPage);
+                        fbPage.addEventListener('click', () => {
+                            fbPage.classList.toggle('flipped');
+                        });
+                    }
+                });
+                flipbookModal.classList.remove('hidden');
+                flipbookModal.classList.add('flex');
+            }
+            async function downloadPDF(title) {
+                const downloadBtn = document.getElementById('download-pdf-btn');
+                const originalBtnText = downloadBtn.innerHTML;
+                downloadBtn.disabled = true;
+                downloadBtn.innerHTML = `<span class="loader-small"></span>Creando PDF...`;
+                const originalCurrentPage = currentPage;
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF({ orientation: 'landscape', unit: 'px' });
+                    const pageElements = document.querySelectorAll('.page');
+                    for (let i = 0; i < pageElements.length; i++) {
+                        const page = pageElements[i];
+                        setLoading(true, `Procesando página ${i + 1} de ${pageElements.length} para el PDF...`);
+                        const clone = page.cloneNode(true);
+                        clone.style.display = 'grid';
+                        clone.style.position = 'absolute';
+                        clone.style.left = '-9999px';
+                        clone.style.width = ebookContainer.clientWidth + 'px';
+                        document.body.appendChild(clone);
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        const canvas = await html2canvas(clone, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+                        document.body.removeChild(clone);
+                        if (canvas.width === 0 || canvas.height === 0) {
+                           throw new Error(`La captura de la página ${i + 1} resultó en una imagen vacía.`);
+                        }
+                        const pageWidth = doc.internal.pageSize.getWidth();
+                        const pageHeight = doc.internal.pageSize.getHeight();
+                        const ratio = canvas.width / canvas.height;
+                        let pdfImgWidth = pageWidth;
+                        let pdfImgHeight = pageWidth / ratio;
+                        if (pdfImgHeight > pageHeight) {
+                            pdfImgHeight = pageHeight;
+                            pdfImgWidth = pdfImgHeight * ratio;
+                        }
+                        const x = (pageWidth - pdfImgWidth) / 2;
+                        const y = (pageHeight - pdfImgHeight) / 2;
+                        if (i > 0) doc.addPage([pageWidth, pageHeight], 'landscape');
+                        doc.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, pdfImgWidth, pdfImgHeight);
+                    }
+                    doc.save(`${title.replace(/ /g, '_')}.pdf`);
+                } catch(error) {
+                    console.error("Error creating PDF:", error);
+                    displayError("No se pudo crear el PDF. " + error.message);
+                } finally {
+                    downloadBtn.disabled = false;
+                    downloadBtn.innerHTML = originalBtnText;
+                    currentPage = originalCurrentPage;
+                    updatePage();
+                    setLoading(false); 
+                }
+            }
+            function readFileAsBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = (error) => reject(error);
+                });
+            }
+            async function handlePlotSuggestion() {
+                const characterName = document.getElementById('character').value;
+                const characterDesc = document.getElementById('character_desc').value;
+                const setting = document.getElementById('setting').value;
+                const readingLevel = document.getElementById('reading_level').value;
 
+                if (!characterName || !setting) {
+                    alert("Por favor, define primero el personaje y el lugar.");
+                    return;
+                }
+
+                plotSuggestionsContainer.innerHTML = `<div class="flex items-center justify-center"><div class="loader-small !border-purple-700 !border-t-transparent"></div><span class="text-purple-700 text-sm">Buscando ideas...</span></div>`;
+                suggestPlotBtn.disabled = true;
+
+                try {
+                    const prompt = `Basado en el personaje "${characterName}" que es ${characterDesc}, en el mundo de "${setting}" y para un nivel de lectura ${readingLevel}, genera 3 ideas cortas y emocionantes para una trama de cuento. Responde ÚNICAMENTE con un objeto JSON que contenga un array de strings llamado "tramas". Ejemplo: {"tramas": ["Idea 1", "Idea 2", "Idea 3"]}`;
+                    
+                    const payload = {
+                        contents: [{ role: "user", parts: [{ text: prompt }] }],
+                        generationConfig: { responseMimeType: "application/json" }
+                    };
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${googleApiKey}`;
+                    
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    
+                    if (!response.ok) {
+                        const errorMsg = await handleApiError(response);
+                        throw new Error(`Error al sugerir tramas: ${errorMsg}`);
+                    }
+
+                    const result = await response.json();
+                    const suggestions = JSON.parse(result.candidates[0].content.parts[0].text);
+
+                    plotSuggestionsContainer.innerHTML = '';
+                    if (suggestions.tramas && suggestions.tramas.length > 0) {
+                        suggestions.tramas.forEach(suggestion => {
+                            const button = document.createElement('button');
+                            button.type = 'button';
+                            button.textContent = suggestion;
+                            button.className = "w-full text-left p-2 bg-purple-50 hover:bg-purple-100 rounded-md text-sm text-purple-800 transition-colors";
+                            button.onclick = () => {
+                                plotInput.value = suggestion;
+                                plotSuggestionsContainer.innerHTML = '';
+                            };
+                            plotSuggestionsContainer.appendChild(button);
+                        });
+                    }
+
+                } catch(error) {
+                    console.error("Error suggesting plot:", error);
+                    plotSuggestionsContainer.innerHTML = `<p class="text-red-500 text-sm">No se pudieron generar sugerencias. ${error.message}</p>`;
+                } finally {
+                    suggestPlotBtn.disabled = false;
+                }
+            }
         });
     </script>
 </body>
