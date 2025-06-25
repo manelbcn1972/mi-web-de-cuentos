@@ -21,7 +21,9 @@ const firebaseConfig = {
 const googleApiKey = "AIzaSyBr3ANRwaE3WFwLgfFVi8qvWf5sESdJPAA";
 
 
-// --- El resto del código funciona sin cambios ---
+
+
+// --- INICIO DEL CÓDIGO DE LA APLICACIÓN ---
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const provider = new firebase.auth.GoogleAuthProvider();
@@ -70,6 +72,7 @@ const exampleStories = {
     'example-max': { character: 'Max', character_desc: 'Un gato negro y sigiloso con brillantes ojos verdes y un collar con un pequeño cascabel que nunca suena.', setting: 'La luna, hecha de queso suizo, con cráteres llenos de leche y estrellas que son bolas de estambre.', plot: 'Aburrido de los juguetes terrestres, el gato Max construye un cohete con una caja de cartón y viaja a la luna. Allí, se hace amigo de los amistosos ratones lunares, que le enseñan a rebotar en la baja gravedad y a surfear en los ríos de leche.', style: 'estilo de dibujos animados alegres', reading_level: 'para niños de 3 a 6 años' },
     'example-rocky': { character: 'Rocky', character_desc: 'Un pequeño y regordete hamster de color marrón y blanco, con grandes mofletes y un sombrero de detective de papel.', setting: 'Una compleja ciudad de tubos de plástico y túneles dentro de una jaula, con una rueda de ejercicio como el centro de la ciudad.', plot: '¡Ha desaparecido la galleta más grande y deliciosa de la jaula! El astuto detective Rocky, sigue un rastro de migas y pistas para interrogar a los otros habitantes de la jaula y resolver el caso más sabroso de su carrera.', style: 'estilo libro de cuentos clásico', reading_level: 'para niños de 7 a 12 años' }
 };
+
 auth.onAuthStateChanged(user => {
     if (user) {
         loginBtn.style.display = 'none';
@@ -93,4 +96,4 @@ document.addEventListener('DOMContentLoaded', () => {
     ebookContent.style.display = 'block';
     loadingView.style.display = 'none';
 });
-// (El resto del código de funciones va aquí...)
+// (El resto de las funciones como renderEbook, handleStoryGeneration, etc., van aquí. Asegúrate de copiarlo todo)
