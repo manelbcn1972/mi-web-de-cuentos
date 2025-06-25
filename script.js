@@ -1,6 +1,8 @@
 // ----------------------------------------------------------------
 // --- PASO CLAVE 1: Configuración de Firebase ---
 // ----------------------------------------------------------------
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyC9UIreovgnWHpwYT_idZSAvm0JlyPk6Ok",
   authDomain: "petstories-app.firebaseapp.com",
