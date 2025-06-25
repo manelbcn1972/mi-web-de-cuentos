@@ -93,9 +93,47 @@ document.addEventListener('DOMContentLoaded', () => {
     ebookContent.style.display = 'block';
     loadingView.style.display = 'none';
 });
-function renderEbook(title, pagesData) {
-    // ... (El resto de las funciones, como renderEbook, handleStoryGeneration, etc., van aquí. Asegúrate de copiar todo el bloque desde la versión anterior).
+
+function setLoading(isLoading, message = '') {
+    const btnText = document.getElementById('btn-text');
+    const btnLoader = document.getElementById('btn-loader');
+    if (generateBtn) {
+        generateBtn.disabled = isLoading;
+        if(btnText) btnText.classList.toggle('hidden', isLoading);
+        if(btnLoader) btnLoader.classList.toggle('hidden', !isLoading);
+    }
+    if (isLoading) {
+        ebookPlaceholder.style.display = 'none';
+        ebookContent.style.display = 'none';
+        loadingView.style.display = 'flex';
+        loadingMessage.textContent = message;
+    } else {
+        loadingView.style.display = 'none';
+        if (ebookContent.innerHTML !== '') {
+            ebookContent.style.display = 'block';
+        } else {
+            ebookPlaceholder.style.display = 'block';
+        }
+    }
 }
 
+function renderEbook(title, pagesData) {
+    let bookHtml = '<div class="relative w-full aspect-[4/3] book">';
+    bookHtml += `<div id="page-0" class="page active grid grid-cols-1 place-content-center bg-pink-500 text-white p-8 rounded-lg"><div class="text-center"><h3 class="font-brand text-4xl">${title}</h3><p class="mt-4 opacity-80">Un cuento generado por IA</p></div></div>`;
+    pagesData.forEach((page, index) => {
+        bookHtml += `<div id="page-${index + 1}" class="page grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg border"><div class="flex items-center justify-center bg-gray-100 rounded-md overflow-hidden"><img src="${page.imageUrl}" alt="Ilustración para el cuento" class="w-full h-full object-cover"></div><div class="flex items-center p-4"><p class="text-gray-700 leading-relaxed">${page.text}</p></div></div>`;
+    });
+    bookHtml += '</div>';
+    bookHtml += `<div class="mt-4 flex justify-between items-center w-full max-w-lg mx-auto"><button id="prev-btn" class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50">&larr; Anterior</button><span id="page-indicator" class="text-sm text-gray-500"></span><button id="next-btn" class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300">&rarr; Siguiente</button></div>`;
+    bookHtml += `<div id="action-buttons" class="mt-6 text-center flex justify-center space-x-4"><button id="download-pdf-btn" class="bg-green-600 text-white font-bold py-2 px-6 rounded-md hover:bg-green-700"><span>Descargar PDF</span></button><button id="open-flipbook-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-md hover:bg-blue-700"><span>📖 Ver como Flipbook</span></button></div>`;
 
-
+    ebookContent.innerHTML = bookHtml;
+    totalPages = pagesData.length + 1;
+    currentPage = 0;
+    updatePage();
+    document.getElementById('prev-btn').addEventListener('click', prevPage);
+    document.getElementById('next-btn').addEventListener('click', nextPage);
+    document.getElementById('download-pdf-btn').addEventListener('click', () => downloadPDF(title));
+    document.getElementById('open-flipbook-btn').addEventListener('click', () => openFlipbook(title));
+}
+// ... (El resto de las funciones, como handleStoryGeneration, etc., van aquí. Asegúrate de copiar todo el bloque)
