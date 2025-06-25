@@ -3,15 +3,14 @@
 // Ve a la web de Firebase, entra en tu proyecto, ve a "Project Settings"
 // y copia aquí el objeto `firebaseConfig` que te proporcionan.
 // ----------------------------------------------------------------
-
+// --- PASO CLAVE 1: Configuración de Firebase ---
 const firebaseConfig = {
- apiKey: "AIzaSyC9UIreovgnWHpwYT_idZSAvm0JlyPk6Ok",
-  authDomain: "petstories-app.firebaseapp.com",
-  projectId: "petstories-app",
-  storageBucket: "petstories-app.firebasestorage.app",
-  messagingSenderId: "90799928498",
-  appId: "1:90799928498:web:d503295ddaec2822dd45ab", q
-  measurementId: "G-D4Y7D0VDSW"
+    apiKey: "AIzaSyC9UIreovgnWHpwYT_idZSAvm0JlyPk6Ok",
+    authDomain: "petstories-app.firebaseapp.com",
+    projectId: "petstories-app",
+    storageBucket: "petstories-app.appspot.com",
+    messagingSenderId: "90799928498",
+    appId: "1:90799928498:web:d503295ddaec2822dd45ab"
 };
 
 // ----------------------------------------------------------------
