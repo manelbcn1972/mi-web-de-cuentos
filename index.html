@@ -25,7 +25,7 @@
             </div>
             <div id="auth-container" class="relative">
                 <button id="login-btn" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-full hover:bg-blue-600 transition-colors">Iniciar Sesión</button>
-                <div id="user-profile" style="display: none;" class="items-center cursor-pointer">
+                <div id="user-profile" style="display: none;" class="flex items-center cursor-pointer">
                     <img id="user-avatar" class="w-10 h-10 rounded-full mr-2" alt="User Avatar">
                     <span id="user-name" class="font-semibold text-gray-700"></span>
                     <div id="logout-dropdown" class="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-xl z-20 hidden">
@@ -46,12 +46,147 @@
         </div>
     </header>
     <div class="container mx-auto px-6 py-16">
-        <section id="como-funciona" class="text-center mb-24"><!-- ... Contenido ... --></section>
-        <section id="crear-cuento" class="bg-white p-8 md:p-12 rounded-3xl shadow-2xl"><!-- ... Contenido ... --></section>
-        <section id="ejemplos" class="mt-24 text-center"><!-- ... Contenido ... --></section>
+        <section id="como-funciona" class="text-center mb-24">
+             <h2 class="font-brand text-4xl font-bold text-gray-800">¿Cómo Funciona?</h2>
+             <p class="mt-2 text-gray-500">Crear tu cuento es tan fácil como 1, 2, 3.</p>
+             <div class="mt-12 grid md:grid-cols-3 gap-8">
+                <div class="bg-white p-8 rounded-2xl shadow-lg">
+                    <div class="text-pink-500 text-5xl">1.</div>
+                    <h3 class="font-brand text-2xl font-bold mt-4">Describe la Aventura</h3>
+                    <p class="mt-2 text-gray-500">Sube una foto de tu mascota o descríbela. Luego, elige un lugar, una trama y un estilo visual para su historia.</p>
+                </div>
+                 <div class="bg-white p-8 rounded-2xl shadow-lg">
+                    <div class="text-pink-500 text-5xl">2.</div>
+                    <h3 class="font-brand text-2xl font-bold mt-4">Magia de la IA</h3>
+                    <p class="mt-2 text-gray-500">Nuestra Inteligencia Artificial escribirá un cuento de 8 páginas y creará ilustraciones mágicas para cada una.</p>
+                </div>
+                 <div class="bg-white p-8 rounded-2xl shadow-lg">
+                    <div class="text-pink-500 text-5xl">3.</div>
+                    <h3 class="font-brand text-2xl font-bold mt-4">Lee y Descarga</h3>
+                    <p class="mt-2 text-gray-500">Disfruta de tu cuento personalizado en formato libro digital, y descárgalo como un PDF para guardarlo siempre.</p>
+                </div>
+             </div>
+        </section>
+
+        <section id="crear-cuento" class="bg-white p-8 md:p-12 rounded-3xl shadow-2xl">
+            <header class="text-center mb-12">
+                <h2 class="font-brand text-5xl font-extrabold text-gray-800">Generador de Cuentos</h2>
+                <p class="text-gray-500 mt-2">¡Aquí comienza la aventura de tu mascota!</p>
+            </header>
+            <main class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+                <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                    <form id="story-form" class="space-y-4">
+                        <div>
+                            <label for="pet_image" class="block text-sm font-medium text-gray-600 mb-1">Sube una foto de tu mascota (opcional):</label>
+                            <input type="file" id="pet_image" name="pet_image" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100">
+                            <div class="mt-2 text-center">
+                                <img id="image_preview" class="hidden max-h-40 mx-auto rounded-lg shadow-sm" alt="Vista previa de la mascota">
+                            </div>
+                        </div>
+                        <div id="character_desc_group">
+                            <label for="character_desc" class="block text-sm font-medium text-gray-600 mb-1">O describe a tu personaje:</label>
+                            <textarea id="character_desc" name="character_desc" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500" placeholder="Ej: Un conejo blanco y bajito con orejas largas..." required></textarea>
+                        </div>
+                        <div>
+                            <label for="character" class="block text-sm font-medium text-gray-600 mb-1">Nombre de tu mascota / personaje:</label>
+                            <input type="text" id="character" name="character" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500" placeholder="Ej: El conejo Tito" required>
+                        </div>
+                        <div>
+                            <label for="setting" class="block text-sm font-medium text-gray-600 mb-1">Lugar o mundo:</label>
+                            <input type="text" id="setting" name="setting" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500" placeholder="Ej: Un bosque de caramelos" required>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label for="plot" class="block text-sm font-medium text-gray-600">Trama o problema:</label>
+                                <button type="button" id="suggest-plot-btn" class="text-sm bg-purple-100 text-purple-700 hover:bg-purple-200 font-semibold py-1 px-3 rounded-full">✨ Sugerir Trama</button>
+                            </div>
+                            <textarea id="plot" name="plot" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500" placeholder="Ej: Ha perdido su zanahoria cohete..." required></textarea>
+                            <div id="plot-suggestions" class="mt-2 space-y-2"></div>
+                        </div>
+                        <div>
+                            <label for="style" class="block text-sm font-medium text-gray-600 mb-1">Estilo de ilustración:</label>
+                            <select id="style" name="style" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500">
+                                <option value="estilo acuarela digital">Acuarela digital</option>
+                                <option value="estilo libro de cuentos clásico">Libro de cuentos clásico</option>
+                                <option value="estilo de dibujos animados alegres">Dibujos animados alegres</option>
+                                <option value="arte de fantasía encantado">Fantasía encantada</option>
+                            </select>
+                        </div>
+                         <div>
+                            <label for="visual_modifier" class="block text-sm font-medium text-gray-600 mb-1">Dinamismo Visual:</label>
+                            <select id="visual_modifier" name="visual_modifier" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500">
+                                <option value="variado">Variado (Recomendado)</option>
+                                <option value="planos cercanos">Enfocar en Personajes</option>
+                                <option value="planos generales">Mostrar el Entorno</option>
+                            </select>
+                        </div>
+                         <div>
+                            <label for="reading_level" class="block text-sm font-medium text-gray-600 mb-1">Nivel de Lectura:</label>
+                            <select id="reading_level" name="reading_level" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500">
+                                <option value="para niños de 3 a 6 años">Infantil (3-6 años)</option>
+                                <option value="para niños de 7 a 12 años">Juvenil (7-12 años)</option>
+                                <option value="para adolescentes de 13+ años">Adolescente (13+ años)</option>
+                            </select>
+                        </div>
+                        <button type="submit" id="generate-btn" class="w-full bg-pink-500 text-white font-bold py-3 px-4 rounded-md hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-transform transform hover:scale-105 flex items-center justify-center shadow-lg">
+                            <span id="btn-text">Generar Mi Cuento</span>
+                        </button>
+                    </form>
+                </div>
+                <div id="ebook-container" class="bg-gray-50 p-6 rounded-xl border border-gray-200 flex flex-col items-center justify-center min-h-[500px]">
+                    <div id="ebook-placeholder" class="text-center text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-24 w-24 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v11.494m-9-5.494h18M6.613 4.512l10.774 14.976M4.512 17.387l14.976-10.774M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <p class="mt-4 font-brand text-2xl">Tu cuento aparecerá aquí...</p>
+                    </div>
+                    <div id="ebook-content" class="w-full h-full"></div>
+                     <div id="loading-view" class="hidden flex-col items-center justify-center text-center">
+                        <div class="loader"></div>
+                        <p id="loading-message" class="mt-4 text-gray-600 font-semibold">Cargando cuento de ejemplo...</p>
+                    </div>
+                </div>
+            </main>
+        </section>
+
+        <section id="ejemplos" class="mt-24 text-center">
+             <h2 class="font-brand text-4xl font-bold text-gray-800">Cuentos llenos de Magia</h2>
+             <p class="mt-2 text-gray-500">Haz clic en un ejemplo para generar la historia completa.</p>
+             <div class="mt-12 grid md:grid-cols-3 gap-8">
+                <a href="https://manelbcn1972.github.io/mi-web-de-cuentos/pdfs/Lara_la_Exploradora.pdf" target="_blank" class="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform hover:scale-105 transition-transform">
+                    <img src="https://placehold.co/600x400/fecaca/991b1b?text=Lara+la+Exploradora" alt="Ejemplo de cuento 1" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="font-brand text-2xl font-bold">Lara la Exploradora</h3>
+                        <p class="mt-2 text-gray-500 text-sm">Lara descubre un mapa misterioso en el jardín y se embarca en una aventura para encontrar el tesoro perdido de los ladridos.</p>
+                    </div>
+                </a>
+                <a href="https://manelbcn1972.github.io/mi-web-de-cuentos/pdfs/Max_en_el_Espacio.pdf" target="_blank" class="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform hover:scale-105 transition-transform">
+                    <img src="https://placehold.co/600x400/d1fae5/065f46?text=Max+en+el+Espacio" alt="Ejemplo de cuento 2" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="font-brand text-2xl font-bold">Max en el Espacio</h3>
+                        <p class="mt-2 text-gray-500 text-sm">El gato Max construye un cohete de cartón y viaja a la luna, donde se hace amigo de los ratones lunares que aman el queso.</p>
+                    </div>
+                </a>
+                <a href="https://manelbcn1972.github.io/mi-web-de-cuentos/pdfs/Rocky_el_Detective.pdf" target="_blank" class="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform hover:scale-105 transition-transform">
+                    <img src="https://placehold.co/600x400/e0e7ff/3730a3?text=Rocky+el+Detective" alt="Ejemplo de cuento 3" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="font-brand text-2xl font-bold">Rocky el Detective</h3>
+                        <p class="mt-2 text-gray-500 text-sm">El misterio de la galleta desaparecida. El astuto hamster Rocky sigue las migas para resolver su caso más delicioso.</p>
+                    </div>
+                </a>
+             </div>
+        </section>
     </div>
-    <footer class="bg-white mt-16 py-8"><!-- ... Contenido ... --></footer>
-    <div id="flipbook-modal" class="fixed inset-0 w-full h-full z-50 hidden items-center justify-center p-4"><!-- ... Contenido ... --></div>
+
+    <footer class="bg-white mt-16 py-8">
+        <div class="container mx-auto text-center text-gray-500">
+            <p>&copy; 2024 PetStories. Creado con ❤️ y un poco de magia IA.</p>
+        </div>
+    </footer>
+    
+    <div id="flipbook-modal" class="fixed inset-0 w-full h-full z-50 hidden items-center justify-center p-4">
+        <div id="flipbook-container" class="relative flipbook"></div>
+        <button id="close-flipbook" class="absolute top-4 right-4 text-white text-5xl font-bold">&times;</button>
+    </div>
+    
     <script src="script.js" type="module"></script>
 </body>
 </html>
