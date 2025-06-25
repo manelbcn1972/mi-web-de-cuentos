@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetStories - Crea Cuentos Mágicos de tu Mascota</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="font-brand text-2xl font-bold text-pink-500"><a href="#">🐾 PetStories</a></div>
+            <div class="hidden md:flex space-x-8 items-center">
+                <a href="#" class="text-gray-600 hover:text-pink-500">Inicio</a>
+                <a href="#como-funciona" class="text-gray-600 hover:text-pink-500">¿Cómo funciona?</a>
+                <a href="#crear-cuento" class="text-gray-600 hover:text-pink-500">Crear Cuento</a>
+                <a href="#ejemplos" class="text-gray-600 hover:text-pink-500">Ejemplos</a>
+            </div>
+            <div id="auth-container" class="relative">
+                <button id="login-btn" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-full hover:bg-blue-600 transition-colors">Iniciar Sesión</button>
+                <div id="user-profile" style="display: none;" class="items-center cursor-pointer">
+                    <img id="user-avatar" class="w-10 h-10 rounded-full mr-2" alt="User Avatar">
+                    <span id="user-name" class="font-semibold text-gray-700"></span>
+                    <div id="logout-dropdown" class="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-xl z-20 hidden">
+                        <a id="logout-btn" href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cerrar Sesión</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <header class="hero-bg">
+        <div class="container mx-auto px-6 py-24 md:py-32 text-center">
+            <h1 class="font-brand text-5xl md:text-7xl font-extrabold text-gray-800"><span id="greeting">¡Hola!</span><br class="hidden md:block"/>Crea Cuentos Mágicos de tu <span class="text-pink-500">Mascota</span></h1>
+            <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Transforma a tu peludo amigo en el héroe de aventuras increíbles. Nuestra IA crea historias de 8 páginas ilustradas que harán sonreír a toda la familia.</p>
+            <div class="mt-8 flex justify-center space-x-4">
+                <a href="#crear-cuento" class="bg-pink-500 text-white font-bold py-3 px-8 rounded-full hover:bg-pink-600 transition-transform transform hover:scale-105 shadow-lg">✨ Crear Mi Cuento</a>
+                <a href="#ejemplos" class="bg-white text-gray-700 font-bold py-3 px-8 rounded-full hover:bg-gray-100 transition-transform transform hover:scale-105 shadow-lg border">📖 Ver Ejemplos</a>
+            </div>
+        </div>
+    </header>
+    <div class="container mx-auto px-6 py-16">
+        <section id="como-funciona" class="text-center mb-24"><!-- ... Contenido ... --></section>
+        <section id="crear-cuento" class="bg-white p-8 md:p-12 rounded-3xl shadow-2xl"><!-- ... Contenido ... --></section>
+        <section id="ejemplos" class="mt-24 text-center"><!-- ... Contenido ... --></section>
+    </div>
+    <footer class="bg-white mt-16 py-8"><!-- ... Contenido ... --></footer>
+    <div id="flipbook-modal" class="fixed inset-0 w-full h-full z-50 hidden items-center justify-center p-4"><!-- ... Contenido ... --></div>
+    <script src="script.js" type="module"></script>
+</body>
+</html>
