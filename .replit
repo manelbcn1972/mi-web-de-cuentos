@@ -2,3 +2,19 @@ modules = ["web", "docker", "python-with-prybar-3.10", "zig-0.11", "ruff", "pyri
 
 [nix]
 channel = "stable-24_05"
+
+[workflows]
+runButton = "Servidor Web"
+
+[[workflows.workflow]]
+name = "Servidor Web"
+author = 44233477
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python -m http.server 8000"
+
+[[ports]]
+localPort = 8000
+externalPort = 80
