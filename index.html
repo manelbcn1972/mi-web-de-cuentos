@@ -545,7 +545,28 @@
                     const doc = new jsPDF({ orientation: 'landscape', unit: 'px' });
                     
                     const coverElement = document.getElementById('page-0');
-                    let canvas = await html2canvas(coverElement, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+                    let canvas;
+                    try {
+                        canvas = await html2canvas(coverElement, { 
+                            scale: 2, 
+                            useCORS: true, 
+                            backgroundColor: '#ffffff',
+                            allowTaint: false,
+                            foreignObjectRendering: false
+                        });
+                    } catch (coverError) {
+                        console.error("Error rendering cover:", coverError);
+                        // Create a simple fallback canvas
+                        canvas = document.createElement('canvas');
+                        canvas.width = 800;
+                        canvas.height = 600;
+                        const ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, 800, 600);
+                        ctx.fillStyle = '#333333';
+                        ctx.font = '24px Arial';
+                        ctx.fillText('Error al cargar la portada', 50, 300);
+                    }
                     let pageWidth = doc.internal.pageSize.getWidth();
                     let pageHeight = doc.internal.pageSize.getHeight();
                     doc.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
@@ -563,11 +584,31 @@
                         
                         const imgContainer = document.createElement('div');
                         imgContainer.className = 'flex items-center justify-center';
+
+                        // Create image with proper loading handling
                         const img = document.createElement('img');
                         img.crossOrigin = "anonymous";
-                        img.src = pageData.imageUrl;
                         img.style.maxWidth = '100%';
                         img.style.maxHeight = '100%';
+
+                        // Wait for image to load properly
+                        await new Promise((resolve, reject) => {
+                            img.onload = resolve;
+                            img.onerror = () => {
+                                console.warn(`Failed to load image for page ${i + 1}, using placeholder`);
+                                img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+                                resolve();
+                            };
+                            img.src = pageData.imageUrl;
+                            // Timeout after 5 seconds
+                            setTimeout(() => {
+                                if (!img.complete) {
+                                    img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+                                    resolve();
+                                }
+                            }, 5000);
+                        });
+
                         imgContainer.appendChild(img);
 
                         const textContainer = document.createElement('div');
@@ -577,20 +618,47 @@
                         tempPage.appendChild(imgContainer);
                         tempPage.appendChild(textContainer);
                         document.body.appendChild(tempPage);
-                        
-                        await new Promise(resolve => setTimeout(resolve, 50));
 
-                        canvas = await html2canvas(tempPage, { scale: 2, useCORS: true });
-                        doc.addPage([pageWidth, pageHeight], 'landscape');
-                        doc.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
-                        
+                        // Wait a bit longer for rendering
+                        await new Promise(resolve => setTimeout(resolve, 200));
+
+                        try {
+                            canvas = await html2canvas(tempPage, { 
+                                scale: 2, 
+                                useCORS: true, 
+                                backgroundColor: '#ffffff',
+                                allowTaint: false,
+                                foreignObjectRendering: false
+                            });
+                            doc.addPage([pageWidth, pageHeight], 'landscape');
+                            doc.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
+                        } catch (renderError) {
+                            console.error(`Error rendering page ${i + 1}:`, renderError);
+                            // Add a blank page if rendering fails
+                            doc.addPage([pageWidth, pageHeight], 'landscape');
+                            doc.text(`Error: No se pudo renderizar la página ${i + 1}`, 50, 50);
+                        }
+
                         document.body.removeChild(tempPage);
                     }
 
                     doc.addPage([pageWidth, pageHeight], 'landscape');
                     const backCoverElement = document.getElementById(`page-${storyPagesData.length + 1}`);
-                    const backCanvas = await html2canvas(backCoverElement, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-                    doc.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
+                    try {
+                        const backCanvas = await html2canvas(backCoverElement, { 
+                            scale: 2, 
+                            useCORS: true, 
+                            backgroundColor: '#ffffff',
+                            allowTaint: false,
+                            foreignObjectRendering: false
+                        });
+                        doc.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
+                    } catch (backCoverError) {
+                        console.error("Error rendering back cover:", backCoverError);
+                        // Add simple text instead
+                        doc.setFontSize(20);
+                        doc.text('Fin del Cuento', pageWidth / 2, pageHeight / 2, { align: 'center' });
+                    }
 
                     doc.save(`${title.replace(/ /g, '_')}.pdf`);
                 } catch(error) {
