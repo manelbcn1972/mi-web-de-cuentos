@@ -464,11 +464,64 @@
             
             function renderEbook(title, coverImage, pagesData) {
                 let bookHtml = '<div class="relative w-full aspect-[4/3] book">';
-                bookHtml += `<div id="page-0" class="page active grid grid-cols-1 bg-white p-0 rounded-lg overflow-hidden"><img src="${coverImage}" class="w-full h-full object-cover"><div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-8"><h3 class="font-brand text-5xl text-white drop-shadow-lg">${title}</h3></div></div>`;
+                
+                // Portada mejorada
+                bookHtml += `<div id="page-0" class="page active grid grid-cols-1 bg-gradient-to-br from-pink-400 via-purple-500 to-blue-500 p-8 rounded-lg overflow-hidden relative">
+                    <div class="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                    <div class="relative z-10 flex flex-col items-center justify-center h-full text-center">
+                        <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-2xl max-w-md">
+                            <div class="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-yellow-300 to-orange-400 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
+                                <img src="${coverImage}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <div class="text-4xl" style="display: none;">🐾</div>
+                            </div>
+                            <h1 class="font-brand text-3xl md:text-4xl font-bold text-gray-800 mb-2 leading-tight">${title}</h1>
+                            <p class="text-sm text-gray-600 font-medium">Un cuento mágico creado con IA</p>
+                            <div class="mt-4 flex justify-center space-x-2">
+                                <div class="w-2 h-2 bg-pink-400 rounded-full"></div>
+                                <div class="w-2 h-2 bg-purple-400 rounded-full"></div>
+                                <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+                
                 pagesData.forEach((page, index) => {
-                    bookHtml += `<div id="page-${index + 1}" class="page grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg border"><div class="flex items-center justify-center bg-gray-100 rounded-md overflow-hidden"><img src="${page.imageUrl}" alt="Ilustración para el cuento" class="w-full h-full object-cover"></div><div class="flex items-center p-4"><p class="text-gray-700 leading-relaxed">${page.text}</p></div></div>`;
+                    bookHtml += `<div id="page-${index + 1}" class="page grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg border">
+                        <div class="flex items-center justify-center bg-gray-100 rounded-md overflow-hidden">
+                            <img src="${page.imageUrl}" alt="Ilustración para el cuento" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500" style="display: none;">
+                                <div class="text-center">
+                                    <div class="text-4xl mb-2">🖼️</div>
+                                    <p class="text-sm">Imagen no disponible</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center p-4">
+                            <p class="text-gray-700 leading-relaxed">${page.text}</p>
+                        </div>
+                    </div>`;
                 });
-                bookHtml += `<div id="page-${pagesData.length + 1}" class="page grid grid-cols-1 place-content-center bg-gray-200 text-gray-600 p-8 rounded-lg"><div class="text-center"><h3 class="font-brand text-5xl">Fin</h3><p class="mt-4 opacity-80">🐾</p></div></div>`;
+                
+                // Contraportada mejorada
+                bookHtml += `<div id="page-${pagesData.length + 1}" class="page grid grid-cols-1 bg-gradient-to-br from-green-400 via-blue-500 to-purple-600 p-8 rounded-lg relative">
+                    <div class="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                    <div class="relative z-10 flex flex-col items-center justify-center h-full text-center">
+                        <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-2xl max-w-md">
+                            <div class="text-6xl mb-4">🌟</div>
+                            <h2 class="font-brand text-4xl font-bold text-gray-800 mb-4">¡Fin!</h2>
+                            <p class="text-gray-600 mb-6 leading-relaxed">
+                                ¡Esperamos que hayas disfrutado de esta aventura mágica! 
+                                Cada historia es única y especial, creada con amor y tecnología.
+                            </p>
+                            <div class="flex justify-center space-x-3 text-2xl">
+                                <span>🐾</span>
+                                <span>❤️</span>
+                                <span>✨</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-4">Creado con PetStories AI</p>
+                        </div>
+                    </div>
+                </div>`;
                 bookHtml += '</div>';
                 bookHtml += `<div class="mt-4 flex justify-between items-center w-full max-w-lg mx-auto"><button id="prev-btn" class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50">&larr; Anterior</button><span id="page-indicator" class="text-sm text-gray-500"></span><button id="next-btn" class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300">&rarr; Siguiente</button></div>`;
                 bookHtml += `<div id="action-buttons" class="mt-6 text-center flex justify-center space-x-4"><button id="download-pdf-btn" class="bg-green-600 text-white font-bold py-2 px-6 rounded-md hover:bg-green-700"><span>Descargar PDF</span></button><button id="open-flipbook-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-md hover:bg-blue-700"><span>📖 Ver como Flipbook</span></button><button id="open-print-modal-btn" class="bg-purple-600 text-white font-bold py-2 px-6 rounded-md hover:bg-purple-700"><span>📚 ¡Imprímelo!</span></button></div>`;
@@ -534,130 +587,137 @@
                 });
                 flipbookModal.style.display = 'flex';
             }
+            function createFallbackCanvas(width, height, text) {
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                
+                // Fondo con gradiente
+                const gradient = ctx.createLinearGradient(0, 0, width, height);
+                gradient.addColorStop(0, '#f3f4f6');
+                gradient.addColorStop(1, '#e5e7eb');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, width, height);
+                
+                // Texto
+                ctx.fillStyle = '#374151';
+                ctx.font = 'bold 32px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(text, width / 2, height / 2);
+                
+                return canvas;
+            }
+
             async function downloadPDF(title) {
                 const downloadBtn = document.getElementById('download-pdf-btn');
                 const originalBtnText = downloadBtn.innerHTML;
                 downloadBtn.disabled = true;
                 downloadBtn.innerHTML = `<span class="loader-small"></span>Creando PDF...`;
                 const originalCurrentPage = currentPage;
+                
                 try {
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF({ orientation: 'landscape', unit: 'px' });
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const pageHeight = doc.internal.pageSize.getHeight();
                     
+                    // Renderizar portada
                     const coverElement = document.getElementById('page-0');
                     let canvas;
                     try {
+                        await new Promise(resolve => setTimeout(resolve, 1000)); // Esperar a que se carguen las imágenes
                         canvas = await html2canvas(coverElement, { 
-                            scale: 2, 
+                            scale: 1.5, 
                             useCORS: true, 
                             backgroundColor: '#ffffff',
-                            allowTaint: false,
-                            foreignObjectRendering: false
+                            allowTaint: true,
+                            foreignObjectRendering: true,
+                            logging: false
                         });
                     } catch (coverError) {
                         console.error("Error rendering cover:", coverError);
-                        // Create a simple fallback canvas
-                        canvas = document.createElement('canvas');
-                        canvas.width = 800;
-                        canvas.height = 600;
-                        const ctx = canvas.getContext('2d');
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillRect(0, 0, 800, 600);
-                        ctx.fillStyle = '#333333';
-                        ctx.font = '24px Arial';
-                        ctx.fillText('Error al cargar la portada', 50, 300);
+                        canvas = createFallbackCanvas(800, 600, title);
                     }
-                    let pageWidth = doc.internal.pageSize.getWidth();
-                    let pageHeight = doc.internal.pageSize.getHeight();
+                    
                     doc.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
 
+                    // Renderizar páginas del cuento
                     for (let i = 0; i < storyPagesData.length; i++) {
                         setLoading(true, `Procesando página ${i + 1} de ${storyPagesData.length} para el PDF...`);
                         
                         const pageData = storyPagesData[i];
                         const tempPage = document.createElement('div');
-                        tempPage.className = 'grid grid-cols-2 gap-4 bg-white p-8';
-                        tempPage.style.width = '1123px'; 
-                        tempPage.style.height = '794px';
+                        tempPage.className = 'grid grid-cols-2 gap-8 bg-white p-8 border-2 border-gray-200 rounded-lg';
+                        tempPage.style.width = '1000px'; 
+                        tempPage.style.height = '700px';
                         tempPage.style.position = 'absolute';
                         tempPage.style.left = '-9999px';
+                        tempPage.style.fontFamily = 'Arial, sans-serif';
                         
+                        // Contenedor de imagen con fallback
                         const imgContainer = document.createElement('div');
-                        imgContainer.className = 'flex items-center justify-center';
+                        imgContainer.className = 'flex items-center justify-center bg-gray-100 rounded-lg overflow-hidden';
+                        imgContainer.style.minHeight = '400px';
+                        
+                        const imgPlaceholder = document.createElement('div');
+                        imgPlaceholder.className = 'w-full h-full flex items-center justify-center text-gray-400';
+                        imgPlaceholder.innerHTML = '<div class="text-center"><div class="text-6xl mb-4">🖼️</div><p>Ilustración</p></div>';
+                        imgContainer.appendChild(imgPlaceholder);
 
-                        // Create image with proper loading handling
-                        const img = document.createElement('img');
-                        img.crossOrigin = "anonymous";
-                        img.style.maxWidth = '100%';
-                        img.style.maxHeight = '100%';
-
-                        // Wait for image to load properly
-                        await new Promise((resolve, reject) => {
-                            img.onload = resolve;
-                            img.onerror = () => {
-                                console.warn(`Failed to load image for page ${i + 1}, using placeholder`);
-                                img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
-                                resolve();
-                            };
-                            img.src = pageData.imageUrl;
-                            // Timeout after 5 seconds
-                            setTimeout(() => {
-                                if (!img.complete) {
-                                    img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
-                                    resolve();
-                                }
-                            }, 5000);
-                        });
-
-                        imgContainer.appendChild(img);
-
+                        // Contenedor de texto
                         const textContainer = document.createElement('div');
-                        textContainer.className = 'flex items-center p-4';
-                        textContainer.innerHTML = `<p class="text-gray-700 leading-relaxed text-2xl">${pageData.text}</p>`;
+                        textContainer.className = 'flex items-center justify-center p-6 bg-gray-50 rounded-lg';
+                        textContainer.innerHTML = `<p class="text-gray-800 leading-relaxed text-xl text-center font-medium">${pageData.text}</p>`;
 
                         tempPage.appendChild(imgContainer);
                         tempPage.appendChild(textContainer);
                         document.body.appendChild(tempPage);
 
-                        // Wait a bit longer for rendering
-                        await new Promise(resolve => setTimeout(resolve, 200));
+                        // Esperar un poco para el renderizado
+                        await new Promise(resolve => setTimeout(resolve, 300));
 
                         try {
                             canvas = await html2canvas(tempPage, { 
-                                scale: 2, 
+                                scale: 1.5, 
                                 useCORS: true, 
                                 backgroundColor: '#ffffff',
-                                allowTaint: false,
-                                foreignObjectRendering: false
+                                allowTaint: true,
+                                foreignObjectRendering: true,
+                                logging: false
                             });
                             doc.addPage([pageWidth, pageHeight], 'landscape');
                             doc.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
                         } catch (renderError) {
                             console.error(`Error rendering page ${i + 1}:`, renderError);
-                            // Add a blank page if rendering fails
+                            // Crear página de fallback
                             doc.addPage([pageWidth, pageHeight], 'landscape');
-                            doc.text(`Error: No se pudo renderizar la página ${i + 1}`, 50, 50);
+                            const fallbackCanvas = createFallbackCanvas(800, 600, `Página ${i + 1}`);
+                            doc.addImage(fallbackCanvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
                         }
 
                         document.body.removeChild(tempPage);
                     }
 
+                    // Renderizar contraportada
                     doc.addPage([pageWidth, pageHeight], 'landscape');
                     const backCoverElement = document.getElementById(`page-${storyPagesData.length + 1}`);
                     try {
+                        await new Promise(resolve => setTimeout(resolve, 500));
                         const backCanvas = await html2canvas(backCoverElement, { 
-                            scale: 2, 
+                            scale: 1.5, 
                             useCORS: true, 
                             backgroundColor: '#ffffff',
-                            allowTaint: false,
-                            foreignObjectRendering: false
+                            allowTaint: true,
+                            foreignObjectRendering: true,
+                            logging: false
                         });
                         doc.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
                     } catch (backCoverError) {
                         console.error("Error rendering back cover:", backCoverError);
-                        // Add simple text instead
-                        doc.setFontSize(20);
-                        doc.text('Fin del Cuento', pageWidth / 2, pageHeight / 2, { align: 'center' });
+                        // Crear contraportada de fallback
+                        const fallbackCanvas = createFallbackCanvas(800, 600, '¡Fin del Cuento!');
+                        doc.addImage(fallbackCanvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
                     }
 
                     doc.save(`${title.replace(/ /g, '_')}.pdf`);
