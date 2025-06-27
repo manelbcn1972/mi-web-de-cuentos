@@ -557,6 +557,14 @@
             function nextPage() { if (currentPage < totalPages - 1) { currentPage++; updatePage(); } }
             function openFlipbook(title) { 
                 flipbookContainer.innerHTML = '';
+                
+                // Agregar botón de descarga en el flipbook
+                const downloadButton = document.createElement('button');
+                downloadButton.className = 'absolute top-4 left-4 bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-700 z-50 flex items-center';
+                downloadButton.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Descargar PDF';
+                downloadButton.addEventListener('click', () => downloadPDF(title));
+                flipbookContainer.appendChild(downloadButton);
+                
                 const cover = document.createElement('div');
                 cover.className = 'absolute w-1/2 h-full top-0 left-0 bg-pink-500 text-white p-8 rounded-lg flex items-center justify-center';
                 cover.innerHTML = `<div class="text-center"><h3 class="font-brand text-4xl">${title}</h3><p class="mt-4 opacity-80">Un cuento generado por IA</p></div>`;
