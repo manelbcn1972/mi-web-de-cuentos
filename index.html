@@ -448,24 +448,24 @@
             // Project Settings > General > Your apps > SDK setup and configuration > Config
             // IMPORTANTE: También debes habilitar los proveedores de inicio de sesión (Google, Facebook, Email/Password)
             // en la sección de Authentication > Sign-in method de tu consola de Firebase.
-   const userFirebaseConfig = {
+           // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
   apiKey: "AIzaSyC9UIreovgnWHpwYT_idZSAvm0JlyPk6Ok",
   authDomain: "petstories-app.firebaseapp.com",
   projectId: "petstories-app",
   storageBucket: "petstories-app.firebasestorage.app",
   messagingSenderId: "90799928498",
   appId: "1:90799928498:web:d503295ddaec2822dd45ab",
-  measurementId: "G-D4Y7D0VDSW"
 };
 
-            
-// INSTRUCCIONES: Reemplaza la cadena vacía con tu clave de API de Google AI Studio.
+            // INSTRUCCIONES: Reemplaza la cadena vacía con tu clave de API de Google AI Studio.
             // Puedes obtenerla en https://aistudio.google.com/app/apikey
             const userGoogleAiApiKey = "AIzaSyBLsNvpfVDDxRSfDMo3LHOKkxYA2b-KFgA";
 
             const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : userFirebaseConfig;
-            const googleAiApiKey = typeof __google_ai_api_key !== 'undefined' ? __google_ai_api_key : userGoogleAiApiKey;
+            const googleAiApiKey = userGoogleAiApiKey;
+
             // --- DOM Elements ---
             const storyForm = document.getElementById('story-form');
             const generateBtn = document.getElementById('generate-btn');
@@ -529,15 +529,11 @@
 
             async function initApp() {
                 if (!firebaseConfig || firebaseConfig.apiKey.includes("REEMPLAZA")) {
-                    console.error("Firebase config is not set. Please update the userFirebaseConfig object in the script.");
-                    const body = document.querySelector('body');
-                    body.innerHTML = `<div class="h-screen w-screen flex items-center justify-center p-4 bg-gray-100">
-                        <div class="text-center text-red-700 bg-red-100 p-8 rounded-lg shadow-2xl max-w-2xl">
-                            <h3 class="font-brand font-bold text-3xl text-red-800">Error de Configuración Crítico</h3>
-                            <p class="text-lg mt-4 text-gray-800">La aplicación no puede conectar con la base de datos.</p>
-                            <p class="mt-4 text-gray-700">Por favor, edita el archivo HTML y sigue las instrucciones en el código para añadir tus credenciales de Firebase en el objeto <strong>userFirebaseConfig</strong>. Asegúrate también de haber habilitado los proveedores de inicio de sesión (Google, Facebook, etc.) en tu consola de Firebase.</p>
-                        </div>
-                    </div>`;
+                    showConfigurationError("La configuración de Firebase no está completa. Por favor, sigue las instrucciones en el código para añadir tus credenciales de Firebase y poder usar la aplicación.");
+                    return;
+                }
+                 if (!googleAiApiKey || googleAiApiKey.includes("REEMPLAZA")) {
+                    showConfigurationError("La clave de API de Google AI no está configurada. Por favor, sigue las instrucciones en el código para añadir tu clave de API de Google AI Studio.");
                     return;
                 }
                 try {
@@ -553,6 +549,16 @@
                 }
                 
                 setupEventListeners();
+            }
+
+            function showConfigurationError(message) {
+                 const body = document.querySelector('body');
+                 body.innerHTML = `<div class="h-screen w-screen flex items-center justify-center p-4 bg-gray-100">
+                        <div class="text-center text-red-700 bg-red-100 p-8 rounded-lg shadow-2xl max-w-2xl">
+                            <h3 class="font-brand font-bold text-3xl text-red-800">Error de Configuración Crítico</h3>
+                            <p class="mt-4 text-gray-700">${message}</p>
+                        </div>
+                    </div>`;
             }
             
             function setupEventListeners() {
@@ -943,7 +949,7 @@
                 const imageMimeType = imageBase64Data.split(';')[0].split(':')[1];
                 const pureBase64 = imageBase64Data.split(',')[1];
                 const payload = { contents: [{ role: "user", parts: [{ text: prompt }, { inlineData: { mimeType: imageMimeType, data: pureBase64 } }] }], generationConfig: { responseMimeType: "application/json" } };
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${googleAiApiKey}`;
                 const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if (!response.ok) {
                     const errorMessage = await handleApiError(response);
@@ -969,7 +975,7 @@
                     - Complejidad: ${data.reading_level}
                     Responde ÚNICAMENTE con un objeto JSON válido. El objeto debe contener un "titulo" y un array llamado "parrafos" con exactamente 8 párrafos de texto. Cada párrafo debe ser sustancioso para que la historia sea interesante.`;
                 const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${googleAiApiKey}`;
                 const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if (!response.ok) {
                     const errorMessage = await handleApiError(response);
@@ -996,7 +1002,7 @@
 
             async function generateImage(prompt) {
                 const payload = { instances: [{ prompt }], parameters: { "sampleCount": 1 } };
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${googleAiApiKey}`;
                 const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if (!response.ok) {
                     const errorMessage = await handleApiError(response);
@@ -1029,7 +1035,7 @@
                         contents: [{ role: "user", parts: [{ text: prompt }] }],
                         generationConfig: { responseMimeType: "application/json" }
                     };
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${googleAiApiKey}`;
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
 
                     if (!response.ok) {
