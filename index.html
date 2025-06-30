@@ -448,23 +448,22 @@
             // Project Settings > General > Your apps > SDK setup and configuration > Config
             // IMPORTANTE: También debes habilitar los proveedores de inicio de sesión (Google, Facebook, Email/Password)
             // en la sección de Authentication > Sign-in method de tu consola de Firebase.
-           // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyC9UIreovgnWHpwYT_idZSAvm0JlyPk6Ok",
-  authDomain: "petstories-app.firebaseapp.com",
-  projectId: "petstories-app",
-  storageBucket: "petstories-app.firebasestorage.app",
-  messagingSenderId: "90799928498",
-  appId: "1:90799928498:web:d503295ddaec2822dd45ab",
-};
+            const firebaseConfig = {
+              apiKey: "AIzaSy...REEMPLAZA_CON_TU_API_KEY",
+              apiKey: "AIzaSyC9UIreovgnWHpwYT_idZSAvm0JlyPk6Ok",
+              authDomain: "petstories-app.firebaseapp.com",
+              storageBucket: "petstories-app.firebasestorage.app",
+              messagingSenderId: "90799928498",
+            appId: "1:90799928498:web:d503295ddaec2822dd45ab",
+            };
 
             // INSTRUCCIONES: Reemplaza la cadena vacía con tu clave de API de Google AI Studio.
             // Puedes obtenerla en https://aistudio.google.com/app/apikey
             const userGoogleAiApiKey = "AIzaSyBLsNvpfVDDxRSfDMo3LHOKkxYA2b-KFgA";
 
             const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : userFirebaseConfig;
-            const googleAiApiKey = userGoogleAiApiKey;
+            const finalFirebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : userFirebaseConfig;
+            const googleAiApiKey = typeof __google_ai_api_key !== 'undefined' ? __google_ai_api_key : userGoogleAiApiKey;
 
             // --- DOM Elements ---
             const storyForm = document.getElementById('story-form');
@@ -528,7 +527,7 @@ const firebaseConfig = {
             initApp();
 
             async function initApp() {
-                if (!firebaseConfig || firebaseConfig.apiKey.includes("REEMPLAZA")) {
+                if (!finalFirebaseConfig || finalFirebaseConfig.apiKey.includes("REEMPLAZA")) {
                     showConfigurationError("La configuración de Firebase no está completa. Por favor, sigue las instrucciones en el código para añadir tus credenciales de Firebase y poder usar la aplicación.");
                     return;
                 }
@@ -537,7 +536,7 @@ const firebaseConfig = {
                     return;
                 }
                 try {
-                    const app = initializeApp(firebaseConfig);
+                    const app = initializeApp(finalFirebaseConfig);
                     auth = getAuth(app);
                     db = getFirestore(app);
                     
