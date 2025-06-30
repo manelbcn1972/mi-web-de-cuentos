@@ -461,7 +461,7 @@
             const userGoogleAiApiKey = "AIzaSyBLsNvpfVDDxRSfDMo3LHOKkxYA2b-KFgA";
 
             const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            const finalFirebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : userFirebaseConfig;
+            const finalFirebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : firebaseConfig;
             const googleAiApiKey = typeof __google_ai_api_key !== 'undefined' ? __google_ai_api_key : userGoogleAiApiKey;
 
             // --- DOM Elements ---
