@@ -448,14 +448,15 @@
             // Project Settings > General > Your apps > SDK setup and configuration > Config
             // IMPORTANTE: También debes habilitar los proveedores de inicio de sesión (Google, Facebook, Email/Password)
             // en la sección de Authentication > Sign-in method de tu consola de Firebase.
-            const userFirebaseConfig = {
-              apiKey: "AIzaSy...REEMPLAZA_CON_TU_API_KEY",
-              authDomain: "TU_PROJECT_ID.firebaseapp.com",
-              projectId: "TU_PROJECT_ID",
-              storageBucket: "TU_PROJECT_ID.appspot.com",
-              messagingSenderId: "TU_SENDER_ID",
-              appId: "TU_APP_ID"
-            };
+   const userFirebaseConfig = {
+  apiKey: "AIzaSyC9UIreovgnWHpwYT_idZSAvm0JlyPk6Ok",
+  authDomain: "petstories-app.firebaseapp.com",
+  projectId: "petstories-app",
+  storageBucket: "petstories-app.firebasestorage.app",
+  messagingSenderId: "90799928498",
+  appId: "1:90799928498:web:d503295ddaec2822dd45ab",
+  measurementId: "G-D4Y7D0VDSW"
+};
 
             const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : userFirebaseConfig;
