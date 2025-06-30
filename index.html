@@ -9,12 +9,10 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Baloo+2:wght@700;800&display=swap"
         rel="stylesheet">
-    <!-- PDF & Flipbook Libraries -->
+    <!-- PDF & Canvas Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+    
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -74,7 +72,7 @@
             max-height: 800px;
             perspective: 2500px;
         }
-
+        
         .flipbook .fb-page {
             position: absolute;
             width: 50%;
@@ -93,6 +91,7 @@
             width: 100%;
             height: 100%;
             backface-visibility: hidden;
+            background-color: white;
         }
 
         .flipbook .fb-page .fb-back {
@@ -102,7 +101,7 @@
         .flipbook .fb-page.flipped {
             transform: rotateY(-180deg);
         }
-
+        
         .page {
             width: 100%;
             height: 100%;
@@ -117,6 +116,26 @@
         .page.active {
             display: grid;
         }
+        
+        #toast-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #2d3748;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 9999px;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+        }
+        #toast-notification.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -10px);
+        }
     </style>
 </head>
 
@@ -129,20 +148,18 @@
                 <a href="#" class="text-gray-600 hover:text-pink-500">Inicio</a>
                 <a href="#como-funciona" class="text-gray-600 hover:text-pink-500">¿Cómo funciona?</a>
                 <a href="#crear-cuento" class="text-gray-600 hover:text-pink-500">Crear Cuento</a>
-                <a href="#ejemplos" class="text-gray-600 hover:text-pink-500">Ejemplos</a>
+                <a href="#mis-cuentos" class="text-gray-600 hover:text-pink-500">Mis Cuentos</a>
             </div>
             <div id="auth-container" class="relative">
-                <button id="login-btn"
-                    class="bg-blue-500 text-white font-bold py-2 px-4 rounded-full hover:bg-blue-600 transition-colors">Iniciar
-                    Sesión</button>
-                <div id="user-profile" style="display: none;" class="flex items-center cursor-pointer">
-                    <img id="user-avatar" class="w-10 h-10 rounded-full mr-2" alt="User Avatar">
-                    <span id="user-name" class="font-semibold text-gray-700"></span>
-                    <div id="logout-dropdown"
-                        class="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-xl z-20 hidden">
-                        <a id="logout-btn" href="#"
-                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cerrar Sesión</a>
+                <button id="auth-button" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-full hover:bg-blue-600 transition-colors">
+                    Iniciar Sesión
+                </button>
+                <div id="user-dropdown" class="hidden absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-xl z-20">
+                     <div class="p-4 border-b">
+                        <p id="user-dropdown-name" class="font-semibold text-gray-800"></p>
+                        <p id="user-dropdown-email" class="text-sm text-gray-500"></p>
                     </div>
+                    <a id="logout-btn" href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cerrar Sesión</a>
                 </div>
             </div>
         </div>
@@ -253,16 +270,18 @@
                                 <option value="para adolescentes de 13+ años">Adolescente (13+ años)</option>
                             </select></div>
                         <button type="submit" id="generate-btn"
-                            class="w-full bg-pink-500 text-white font-bold py-3 px-4 rounded-md hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-transform transform hover:scale-105 flex items-center justify-center shadow-lg"><span
-                                id="btn-text">Generar Mi Cuento</span><svg id="btn-loader"
-                                class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden"
+                            class="w-full bg-pink-500 text-white font-bold py-3 px-4 rounded-md hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-transform transform hover:scale-105 flex items-center justify-center shadow-lg">
+                            <span id="btn-text">Generar Mi Cuento</span>
+                            <svg id="btn-loader"
+                                class="animate-spin h-5 w-5 text-white hidden"
                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                                     stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor"
                                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                                 </path>
-                            </svg></button>
+                            </svg>
+                        </button>
                     </form>
                 </div>
                 <div id="ebook-container"
@@ -275,7 +294,7 @@
                         </svg>
                         <p class="mt-4 font-brand text-2xl">Tu cuento aparecerá aquí...</p>
                     </div>
-                    <div id="ebook-content" class="w-full h-full"></div>
+                    <div id="ebook-content" class="w-full h-full relative"></div>
                     <div id="loading-view" class="hidden flex-col items-center justify-center text-center">
                         <div class="loader"></div>
                         <p id="loading-message" class="mt-4 text-gray-600 font-semibold">Generando tu historia...</p>
@@ -284,8 +303,8 @@
             </main>
         </section>
         <section id="ejemplos" class="mt-24 text-center">
-            <h2 class="font-brand text-4xl font-bold text-gray-800">Cuentos llenos de Magia</h2>
-            <p class="mt-2 text-gray-500">Haz clic en un ejemplo para generar la historia completa.</p>
+            <h2 class="font-brand text-4xl font-bold text-gray-800">Cuentos de Muestra</h2>
+            <p class="mt-2 text-gray-500">Haz clic en un ejemplo para generar una vista previa.</p>
             <div class="mt-12 grid md:grid-cols-3 gap-8">
                 <a href="#" id="example-lara"
                     class="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform hover:scale-105 transition-transform flex flex-col"><img
@@ -319,18 +338,59 @@
                 </a>
             </div>
         </section>
+        
+        <section id="mis-cuentos" class="mt-24 text-center hidden">
+            <h2 class="font-brand text-4xl font-bold text-gray-800">Mi Biblioteca de Cuentos</h2>
+            <p class="mt-2 text-gray-500">Aquí están todas las aventuras que has creado.</p>
+            <div id="saved-stories-grid" class="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Saved stories will be injected here -->
+            </div>
+        </section>
     </div>
     <footer class="bg-white mt-16 py-8">
         <div class="container mx-auto text-center text-gray-500">
             <p>&copy; 2024 PetStories. Creado con ❤️ y un poco de magia IA.</p>
         </div>
     </footer>
-    <div id="flipbook-modal" class="fixed inset-0 w-full h-full z-50 hidden items-center justify-center p-4">
+
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full relative">
+            <button id="close-auth-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            <h2 class="font-brand text-3xl font-bold text-gray-800 mb-6 text-center">Únete a la Aventura</h2>
+            <div class="space-y-4">
+                <button id="google-login-btn" class="w-full flex items-center justify-center bg-white border border-gray-300 text-gray-700 font-semibold py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors">
+                    <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" alt="Google Logo" class="h-6 mr-3">
+                    Continuar con Google
+                </button>
+                <button id="facebook-login-btn" class="w-full flex items-center justify-center bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                     <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path></svg>
+                    Continuar con Facebook
+                </button>
+            </div>
+            <div class="my-6 flex items-center">
+                <hr class="flex-grow border-t border-gray-300">
+                <span class="mx-4 text-gray-500 text-sm">O</span>
+                <hr class="flex-grow border-t border-gray-300">
+            </div>
+            <form id="email-form" class="space-y-4">
+                <input type="email" id="email-input" placeholder="Correo electrónico" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
+                <input type="password" id="password-input" placeholder="Contraseña" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
+                <p id="auth-error-message" class="text-red-500 text-sm text-center h-4"></p>
+                <div class="flex gap-4">
+                    <button type="button" id="email-login-btn" class="w-full bg-pink-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-pink-600 transition-colors">Iniciar Sesión</button>
+                    <button type="button" id="email-register-btn" class="w-full bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors">Registrarse</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="flipbook-modal" class="fixed inset-0 w-full h-full z-[60] hidden items-center justify-center p-4">
         <div id="flipbook-container" class="relative flipbook"></div><button id="close-flipbook"
             class="absolute top-4 right-4 text-white text-5xl font-bold">&times;</button>
     </div>
     <div id="print-order-modal"
-        class="fixed inset-0 w-full h-full z-50 hidden items-center justify-center p-4 modal-overlay">
+        class="fixed inset-0 w-full h-full z-[60] hidden items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full">
             <h2 class="font-brand text-3xl font-bold text-gray-800 mb-4">¡Pide tu Cuento en Tapa Dura!</h2>
             <p class="text-gray-600 mb-6">Recibe una copia física de alta calidad de la aventura de tu mascota. ¡Un
@@ -353,30 +413,41 @@
             </form>
         </div>
     </div>
+    
+    <div id="toast-notification"></div>
 
     <script type="module">
-        // ----------------------------------------------------------------
-        // --- PASO CLAVE 1: Configuración de Firebase ---
-        // ----------------------------------------------------------------
-        const firebaseConfig = {
-            apiKey: "AQUI_VA_TU_API_KEY_DE_FIREBASE",
-            authDomain: "AQUI_VA_TU_DOMINIO",
-            projectId: "AQUI_VA_TU_ID_DE_PROYECTO",
-            storageBucket: "AQUI_VA_TU_STORAGE_BUCKET",
-            messagingSenderId: "AQUI_VA_TU_SENDER_ID",
-            appId: "AQUI_VA_TU_APP_ID"
-        };
-
-        // ----------------------------------------------------------------
-        // --- PASO CLAVE 2: Tu clave de API de Google AI Studio ---
-        // ----------------------------------------------------------------
-        const googleApiKey = "AIzaSyC-c8IlwUGiZ7F_GKA6OQ2R3Lw2-hu_-Ps";
-
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged,
+            signInAnonymously,
+            GoogleAuthProvider,
+            FacebookAuthProvider,
+            signInWithPopup,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            query, 
+            onSnapshot,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- INICIO DEL CÓDIGO DE LA APLICACIÓN ---
-        
         document.addEventListener('DOMContentLoaded', () => {
-            
+
+            // --- App Config (Provided by Environment) ---
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+            const apiKey = ""; // This will be populated by the environment.
+
+            // --- DOM Elements ---
             const storyForm = document.getElementById('story-form');
             const generateBtn = document.getElementById('generate-btn');
             const ebookContainer = document.getElementById('ebook-container');
@@ -386,7 +457,6 @@
             const ebookPlaceholder = document.getElementById('ebook-placeholder');
             const petImageInput = document.getElementById('pet_image');
             const imagePreview = document.getElementById('image_preview');
-            const characterDescGroup = document.getElementById('character_desc_group');
             const characterDescInput = document.getElementById('character_desc');
             const suggestPlotBtn = document.getElementById('suggest-plot-btn');
             const plotSuggestionsContainer = document.getElementById('plot-suggestions');
@@ -394,140 +464,276 @@
             const flipbookModal = document.getElementById('flipbook-modal');
             const flipbookContainer = document.getElementById('flipbook-container');
             const closeFlipbookBtn = document.getElementById('close-flipbook');
-            const loginBtn = document.getElementById('login-btn');
-            const userProfile = document.getElementById('user-profile');
-            const userAvatar = document.getElementById('user-avatar');
-            const userName = document.getElementById('user-name');
-            const logoutDropdown = document.getElementById('logout-dropdown');
-            const logoutBtn = document.getElementById('logout-btn');
             const greeting = document.getElementById('greeting');
             const printModal = document.getElementById('print-order-modal');
             const cancelPrintBtn = document.getElementById('cancel-print-btn');
             const printForm = document.getElementById('print-form');
+            const toast = document.getElementById('toast-notification');
+            const savedStoriesSection = document.getElementById('mis-cuentos');
+            const savedStoriesGrid = document.getElementById('saved-stories-grid');
             
+            // Auth UI Elements
+            const authModal = document.getElementById('auth-modal');
+            const authButton = document.getElementById('auth-button');
+            const closeAuthModalBtn = document.getElementById('close-auth-modal');
+            const googleLoginBtn = document.getElementById('google-login-btn');
+            const facebookLoginBtn = document.getElementById('facebook-login-btn');
+            const emailForm = document.getElementById('email-form');
+            const emailInput = document.getElementById('email-input');
+            const passwordInput = document.getElementById('password-input');
+            const emailLoginBtn = document.getElementById('email-login-btn');
+            const emailRegisterBtn = document.getElementById('email-register-btn');
+            const authErrorMessage = document.getElementById('auth-error-message');
+            const userDropdown = document.getElementById('user-dropdown');
+            const userDropdownName = document.getElementById('user-dropdown-name');
+            const userDropdownEmail = document.getElementById('user-dropdown-email');
+            const logoutBtn = document.getElementById('logout-btn');
+
+
+            // --- App State ---
             let currentPage = 0;
             let totalPages = 0;
             let storyPagesData = [];
-            
+            let currentStoryTitle = '';
+            let coverImageData = '';
+            let db, auth;
+            let unsubscribeFromStories;
+
             const exampleStories = {
                 'example-lara': { character: 'Lara', character_desc: 'Una perrita golden retriever, joven y aventurera, con un pelaje dorado brillante y una bandana roja en el cuello.', setting: 'Un jardín trasero que esconde secretos antiguos y caminos inexplorados.', plot: 'Lara descubre un mapa misterioso enterrado bajo su rosal favorito. El mapa la guía en una emocionante búsqueda del legendario Tesoro Perdido de los Ladridos, enfrentándose a ardillas astutas y topos gruñones en el camino.', style: 'estilo acuarela digital', reading_level: 'para niños de 7 a 12 años', visual_modifier: 'variado' },
                 'example-max': { character: 'Max', character_desc: 'Un gato negro y sigiloso con brillantes ojos verdes y un collar con un pequeño cascabel que nunca suena.', setting: 'La luna, hecha de queso suizo, con cráteres llenos de leche y estrellas que son bolas de estambre.', plot: 'Aburrido de los juguetes terrestres, el gato Max construye un cohete con una caja de cartón y viaja a la luna. Allí, se hace amigo de los amistosos ratones lunares, que le enseñan a rebotar en la baja gravedad y a surfear en los ríos de leche.', style: 'estilo de dibujos animados alegres', reading_level: 'para niños de 3 a 6 años', visual_modifier: 'variado' },
                 'example-rocky': { character: 'Rocky', character_desc: 'Un pequeño y regordete hamster de color marrón y blanco, con grandes mofletes y un sombrero de detective de papel.', setting: 'Una compleja ciudad de tubos de plástico y túneles dentro de una jaula, con una rueda de ejercicio como el centro de la ciudad.', plot: '¡Ha desaparecido la galleta más grande y deliciosa de la jaula! El astuto detective Rocky, sigue un rastro de migas y pistas para interrogar a los otros habitantes de la jaula y resolver el caso más sabroso de su carrera.', style: 'estilo libro de cuentos clásico', reading_level: 'para niños de 7 a 12 años', visual_modifier: 'variado' }
             };
 
-            // --- Authentication Logic ---
-            try {
-                if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("AQUI_VA")) {
-                    console.warn("Firebase no está configurado. El inicio de sesión será simulado.");
-                    setupSimulatedAuth();
-                } else {
-                    firebase.initializeApp(firebaseConfig);
-                    const auth = firebase.auth();
-                    const provider = new firebase.auth.GoogleAuthProvider();
+            // --- Initialization ---
+            initApp();
 
-                    auth.onAuthStateChanged(user => {
-                        updateLoginUI(user);
-                    });
-
-                    loginBtn.addEventListener('click', () => {
-                         auth.signInWithRedirect(provider).catch(error => {
-                            if (error.code === 'auth/operation-not-supported-in-this-environment') {
-                                alert('El inicio de sesión con Google no es compatible en este entorno. Funcionará en un sitio web publicado (como GitHub Pages).');
-                            } else {
-                                console.error("Error durante el inicio de sesión:", error);
-                            }
-                        });
-                    });
+            async function initApp() {
+                if (!firebaseConfig) {
+                    console.error("Firebase config is missing.");
+                    displayError("La configuración para conectar con la base de datos no está disponible.");
+                    return;
+                }
+                try {
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
                     
-                    userProfile.addEventListener('click', () => {
-                        logoutDropdown.classList.toggle('hidden');
-                    });
+                    onAuthStateChanged(auth, updateUserUI);
 
-                    logoutBtn.addEventListener('click', (e) => {
+                } catch (error) {
+                    console.error("Firebase Initialization Error:", error);
+                    displayError("Error al iniciar la aplicación.");
+                }
+                
+                setupEventListeners();
+            }
+            
+            function setupEventListeners() {
+                document.querySelectorAll('[id^="example-"]').forEach(card => {
+                    card.addEventListener('click', (e) => {
                         e.preventDefault();
-                        auth.signOut().catch(error => console.error("Error durante el cierre de sesión:", error));
+                        const exampleData = exampleStories[card.id];
+                        if (exampleData) {
+                            document.getElementById('crear-cuento').scrollIntoView({ behavior: 'smooth' });
+                            handleStoryGeneration(null, exampleData, false); // Don't save examples
+                        }
                     });
-                }
-            } catch (error) {
-                 console.error("Error al inicializar Firebase:", error.message);
-                 displayError("No se pudo conectar con el sistema de usuarios. Revisa la configuración de Firebase en el código.");
-            }
-            
-            function setupSimulatedAuth() {
-                loginBtn.addEventListener('click', () => {
-                    const fakeUser = {
-                        displayName: 'Manel',
-                        photoURL: 'https://placehold.co/100x100/A0E8D5/333333?text=M'
-                    };
-                    updateLoginUI(fakeUser);
                 });
-                logoutBtn.addEventListener('click', (e) => {
+                storyForm.addEventListener('submit', (e) => handleStoryGeneration(e, null, true));
+                suggestPlotBtn.addEventListener('click', handlePlotSuggestion);
+                petImageInput.addEventListener('change', handleImagePreview);
+                
+                closeFlipbookBtn.addEventListener('click', () => flipbookModal.style.display = 'none');
+                cancelPrintBtn.addEventListener('click', () => printModal.style.display = 'none');
+                printForm.addEventListener('submit', (e) => {
                     e.preventDefault();
-                    updateLoginUI(null);
+                    printModal.style.display = 'none';
+                    showToast("¡Pedido recibido! (Esto es una simulación).");
                 });
-                 userProfile.addEventListener('click', () => {
-                    logoutDropdown.classList.toggle('hidden');
-                });
-            }
-            
-            function updateLoginUI(user) {
-                if (user) {
-                    loginBtn.style.display = 'none';
-                    userProfile.style.display = 'flex';
-                    userAvatar.src = user.photoURL;
-                    userName.textContent = user.displayName.split(' ')[0];
-                    greeting.textContent = `¡Hola, ${user.displayName.split(' ')[0]}!`;
-                } else {
-                    loginBtn.style.display = 'block';
-                    userProfile.style.display = 'none';
-                    greeting.textContent = "¡Hola!";
-                }
-            }
-
-            // --- App Logic ---
-            handleStoryGeneration(null, exampleStories['example-lara']);
-
-            document.querySelectorAll('[id^="example-"]').forEach(card => {
-                card.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const exampleData = exampleStories[card.id];
-                    if (exampleData) {
-                        document.getElementById('crear-cuento').scrollIntoView({ behavior: 'smooth' });
-                        handleStoryGeneration(null, exampleData);
+                
+                authButton.addEventListener('click', () => {
+                    const user = auth.currentUser;
+                    if (user && !user.isAnonymous) {
+                        userDropdown.classList.toggle('hidden');
+                    } else {
+                        authModal.classList.remove('hidden');
                     }
                 });
-            });
-            
-            closeFlipbookBtn.addEventListener('click', () => {
-                flipbookModal.style.display = 'none';
-            });
-            
-            cancelPrintBtn.addEventListener('click', () => {
-                printModal.style.display = 'none';
-            });
-            
-            printForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                printModal.style.display = 'none';
-                alert("¡Pedido recibido! (Esto es una simulación). Tu cuento llegará en 7-10 días.");
-            });
+                closeAuthModalBtn.addEventListener('click', () => authModal.classList.add('hidden'));
+                googleLoginBtn.addEventListener('click', handleGoogleLogin);
+                facebookLoginBtn.addEventListener('click', handleFacebookLogin);
+                emailLoginBtn.addEventListener('click', handleEmailLogin);
+                emailRegisterBtn.addEventListener('click', handleEmailRegister);
+                logoutBtn.addEventListener('click', handleLogout);
+            }
 
-            storyForm.addEventListener('submit', (e) => handleStoryGeneration(e));
+            // --- Auth & Data Loading Functions ---
+            function updateUserUI(user) {
+                if (user && !user.isAnonymous) {
+                    authButton.innerHTML = `<img src="${user.photoURL || `https://placehold.co/100x100/A0E8D5/333333?text=${user.displayName ? user.displayName.charAt(0).toUpperCase() : '?'}`}" class="w-10 h-10 rounded-full" alt="User Avatar">`;
+                    userDropdownName.textContent = user.displayName || 'Usuario';
+                    userDropdownEmail.textContent = user.email;
+                    greeting.textContent = `¡Hola, ${user.displayName ? user.displayName.split(' ')[0] : 'amigo'}!`;
+                    authModal.classList.add('hidden');
+                    loadUserStories(user.uid);
+                } else {
+                    authButton.innerHTML = 'Iniciar Sesión';
+                    userDropdown.classList.add('hidden');
+                    greeting.textContent = "¡Hola!";
+                    clearUserStories();
+                     if (!user) { // If fully logged out, sign in anonymously
+                        signInAnonymously(auth).catch(error => console.error("Anonymous sign-in failed:", error));
+                    }
+                }
+            }
             
-            suggestPlotBtn.addEventListener('click', handlePlotSuggestion);
+            async function handleGoogleLogin() {
+                const provider = new GoogleAuthProvider();
+                try {
+                    await signInWithPopup(auth, provider);
+                    showToast('¡Bienvenido/a!');
+                } catch (error) {
+                    console.error("Google login error:", error);
+                    authErrorMessage.textContent = getFirebaseAuthErrorMessage(error);
+                }
+            }
+
+            async function handleFacebookLogin() {
+                const provider = new FacebookAuthProvider();
+                try {
+                    await signInWithPopup(auth, provider);
+                    showToast('¡Bienvenido/a!');
+                } catch (error) {
+                    console.error("Facebook login error:", error);
+                    authErrorMessage.textContent = getFirebaseAuthErrorMessage(error);
+                }
+            }
+
+            async function handleEmailLogin() {
+                const email = emailInput.value;
+                const password = passwordInput.value;
+                authErrorMessage.textContent = '';
+                if (!email || !password) {
+                    authErrorMessage.textContent = 'Por favor, introduce email y contraseña.';
+                    return;
+                }
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    showToast('¡Bienvenido/a de nuevo!');
+                } catch(error) {
+                    console.error("Email login error:", error);
+                    authErrorMessage.textContent = getFirebaseAuthErrorMessage(error);
+                }
+            }
+            
+            async function handleEmailRegister() {
+                const email = emailInput.value;
+                const password = passwordInput.value;
+                 authErrorMessage.textContent = '';
+                if (!email || !password) {
+                    authErrorMessage.textContent = 'Por favor, introduce email y contraseña.';
+                    return;
+                }
+                try {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    showToast('¡Registro completado! Bienvenido/a.');
+                } catch(error) {
+                    console.error("Email registration error:", error);
+                    authErrorMessage.textContent = getFirebaseAuthErrorMessage(error);
+                }
+            }
+            
+            async function handleLogout(e) {
+                e.preventDefault();
+                try {
+                    await signOut(auth);
+                    showToast('Has cerrado sesión.');
+                } catch (error) {
+                    console.error("Logout error:", error);
+                }
+            }
+
+            function getFirebaseAuthErrorMessage(error) {
+                switch (error.code) {
+                    case 'auth/invalid-email': return 'El formato del email no es válido.';
+                    case 'auth/user-not-found':
+                    case 'auth/wrong-password': return 'El email o la contraseña son incorrectos.';
+                    case 'auth/email-already-in-use': return 'Este email ya está registrado.';
+                    case 'auth/weak-password': return 'La contraseña debe tener al menos 6 caracteres.';
+                    case 'auth/account-exists-with-different-credential': return 'Ya existe una cuenta con este email. Prueba a iniciar sesión con otro método.';
+                    case 'auth/popup-closed-by-user': return 'Has cerrado la ventana de inicio de sesión.';
+                    default: return 'Ha ocurrido un error. Inténtalo de nuevo.';
+                }
+            }
+            
+            function loadUserStories(userId) {
+                const storiesRef = collection(db, 'artifacts', appId, 'users', userId, 'stories');
+                const q = query(storiesRef);
+
+                if (unsubscribeFromStories) unsubscribeFromStories();
+
+                unsubscribeFromStories = onSnapshot(q, (querySnapshot) => {
+                    if (querySnapshot.empty) {
+                        savedStoriesGrid.innerHTML = '<p class="text-gray-500 col-span-full">Aún no has creado ningún cuento. ¡Anímate a crear el primero!</p>';
+                        savedStoriesSection.classList.remove('hidden');
+                        return;
+                    }
+                    
+                    savedStoriesGrid.innerHTML = '';
+                    querySnapshot.forEach((doc) => {
+                        createStoryCard(doc.id, doc.data());
+                    });
+                    savedStoriesSection.classList.remove('hidden');
+                }, (error) => {
+                    console.error("Error loading stories:", error);
+                    showToast("No se pudieron cargar tus cuentos.");
+                });
+            }
+
+            function createStoryCard(storyId, storyData) {
+                const card = document.createElement('a');
+                card.href = '#crear-cuento';
+                card.className = "bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform hover:scale-105 transition-transform flex flex-col";
+                card.innerHTML = `
+                    <img src="${storyData.coverImage}" alt="Portada de ${storyData.title}" class="w-full h-48 object-cover" onerror="this.src='https://placehold.co/600x400/cccccc/333333?text=🐾'">
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h3 class="font-brand text-2xl font-bold">${storyData.title}</h3>
+                    </div>`;
+                card.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.getElementById('crear-cuento').scrollIntoView({ behavior: 'smooth' });
+                    renderEbook(storyData.title, storyData.coverImage, storyData.pages);
+                });
+                savedStoriesGrid.appendChild(card);
+            }
+
+            function clearUserStories() {
+                if (unsubscribeFromStories) {
+                    unsubscribeFromStories();
+                    unsubscribeFromStories = null;
+                }
+                savedStoriesSection.classList.add('hidden');
+                savedStoriesGrid.innerHTML = '';
+            }
+
+            // --- UI Functions ---
+            
+            function showToast(message) {
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => { toast.classList.remove('show'); }, 3000);
+            }
 
             function setLoading(isLoading, message = '') {
-                const btnText = document.getElementById('btn-text');
-                const btnLoader = document.getElementById('btn-loader');
-                if (generateBtn) {
-                    generateBtn.disabled = isLoading;
-                    const spanElement = btnText ? btnText.parentElement.querySelector('span') : null;
-                    if(spanElement) spanElement.style.display = isLoading ? 'none' : 'inline';
-                    if(btnLoader) btnLoader.style.display = isLoading ? 'inline-block' : 'none';
-                }
+                generateBtn.disabled = isLoading;
+                generateBtn.querySelector('#btn-text').style.display = isLoading ? 'none' : 'inline';
+                generateBtn.querySelector('#btn-loader').style.display = isLoading ? 'inline-block' : 'none';
+                
                 if (isLoading) {
                     ebookPlaceholder.style.display = 'none';
                     ebookContent.style.display = 'none';
+                    ebookContent.innerHTML = '';
                     loadingView.style.display = 'flex';
                     loadingMessage.textContent = message;
                 } else {
@@ -541,79 +747,95 @@
             }
 
             function displayError(message) {
-                 loadingView.style.display = 'none';
-                 ebookContent.innerHTML = `<div class="text-center text-red-500 bg-red-100 p-4 rounded-lg"><h3 class="font-bold">¡Oh no! Algo salió mal</h3><p class="text-sm mt-1">${message}</p></div>`;
-                 ebookContent.style.display = 'block';
+                setLoading(false);
+                ebookPlaceholder.style.display = 'none';
+                ebookContent.innerHTML = `<div class="text-center text-red-500 bg-red-100 p-4 rounded-lg"><h3 class="font-bold">¡Oh no! Algo salió mal</h3><p class="text-sm mt-1">${message}</p></div>`;
+                ebookContent.style.display = 'block';
             }
-            
+
             async function handleApiError(response) {
                 let errorBody = 'Could not read error body.';
-                try { 
-                    errorBody = await response.json();
-                } catch (e) {
-                    try {
-                        errorBody = await response.text();
-                    } catch (readError) {
-                        console.error("Could not even read response text.", readError);
-                    }
+                try { errorBody = await response.json(); } catch (e) {
+                    try { errorBody = await response.text(); } catch (readError) { console.error("Could not read response text.", readError); }
                 }
                 console.error("API Error Response:", errorBody);
                 const specificMessage = errorBody?.error?.message || (typeof errorBody === 'string' ? errorBody : JSON.stringify(errorBody));
                 return specificMessage || response.statusText || "Ocurrió un error en la API.";
             }
-
-            async function analyzePetImage(imageBase64Data) {
-                const prompt = "Analiza esta imagen. Primero, determina si contiene un animal doméstico (como un perro, gato, conejo, etc.). Responde ÚNICAMENTE con un objeto JSON válido. Si es una mascota, el JSON debe tener la forma `{\"isPet\": true, \"description\": \"Descripción detallada...\"}`. Si no es una mascota, el JSON debe ser `{\"isPet\": false, \"description\": \"\"}`. La descripción debe ser detallada, incluyendo especie, raza, colores, patrones y rasgos distintivos para que un ilustrador pueda dibujarlo consistentemente.";
-                const imageMimeType = imageBase64Data.split(';')[0].split(':')[1];
-                const pureBase64 = imageBase64Data.split(',')[1];
-                const payload = { contents: [{ role: "user", parts: [{ text: prompt }, { inlineData: { mimeType: imageMimeType, data: pureBase64 } }] }], generationConfig: { responseMimeType: "application/json" } };
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${googleApiKey}`;
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (!response.ok) {
-                    const errorMessage = await handleApiError(response);
-                    throw new Error(`Error al analizar la imagen: ${errorMessage}`);
+            
+            function handleImagePreview() {
+                const file = petImageInput.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        imagePreview.src = e.target.result;
+                        imagePreview.classList.remove('hidden');
+                        characterDescInput.required = false;
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                     imagePreview.classList.add('hidden');
+                     characterDescInput.required = true;
                 }
-                const result = await response.json();
-                if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    const text = result.candidates[0].content.parts[0].text;
-                    try { return JSON.parse(text); } catch (e) { throw new Error("La IA devolvió una respuesta inesperada para el análisis de la imagen."); }
+            }
+            
+            function extractAndParseJson(text) {
+                const jsonMatch = text.match(/\{[\s\S]*\}/);
+                if (jsonMatch && jsonMatch[0]) {
+                    try { return JSON.parse(jsonMatch[0]); } catch (e) { console.error("Failed to parse extracted JSON:", e, "Original text:", text); }
                 }
-                throw new Error("La IA no pudo analizar la imagen de la mascota.");
+                try { return JSON.parse(text); } catch(e) {
+                    console.error("Failed to parse the entire text as JSON:", e, "Original text:", text);
+                    throw new Error("La IA devolvió una respuesta con formato JSON inválido.");
+                }
             }
 
-            async function handleStoryGeneration(event, predefinedData = null) {
-                if(event) event.preventDefault();
+            // --- Core Application Logic ---
 
-                if (!googleApiKey || googleApiKey.includes("AQUI_VA")) {
-                    displayError("La clave de API de Google AI no está configurada. Por favor, edita el código para añadirla.");
+            async function handleStoryGeneration(event, predefinedData = null, shouldSave = false) {
+                if (event) event.preventDefault();
+                
+                const user = auth.currentUser;
+                if (shouldSave && (!user || user.isAnonymous)) {
+                    showToast('Por favor, inicia sesión para crear y guardar un cuento.');
+                    authModal.classList.remove('hidden');
                     return;
                 }
 
                 setLoading(true, "Iniciando la magia...");
-                ebookContent.innerHTML = '';
                 let storyData;
+                
                 if (predefinedData) {
                     storyData = predefinedData;
                 } else {
                     const formData = new FormData(storyForm);
                     const petImageFile = formData.get('pet_image');
                     let petDescription = formData.get('character_desc');
+                    
                     if (petImageFile && petImageFile.size > 0) {
-                        setLoading(true, "Analizando la foto de tu mascota...");
-                        const imageBase64 = await readFileAsBase64(petImageFile);
-                        const analysisResult = await analyzePetImage(imageBase64);
-                        if (!analysisResult.isPet) {
-                            displayError("La imagen no parece contener una mascota. Por favor, sube otra foto.");
-                            setLoading(false);
-                            return;
+                        try {
+                            setLoading(true, "Analizando la foto de tu mascota...");
+                            const imageBase64 = await readFileAsBase64(petImageFile);
+                            const analysisResult = await analyzePetImage(imageBase64);
+                            if (!analysisResult.isPet) {
+                                displayError("La imagen no parece contener una mascota. Por favor, sube otra foto o descríbela manualmente.");
+                                setLoading(false);
+                                return;
+                            }
+                            petDescription = analysisResult.description;
+                        } catch(error) {
+                             displayError(error.message);
+                             setLoading(false);
+                             return;
                         }
-                        petDescription = analysisResult.description;
                     }
+                    
                     if (!petDescription) {
                         displayError("Por favor, sube una foto de tu mascota o proporciona una descripción.");
                         setLoading(false);
                         return;
                     }
+                    
                     storyData = {
                         character: formData.get('character'),
                         character_desc: petDescription,
@@ -624,16 +846,18 @@
                         reading_level: formData.get('reading_level'),
                     };
                 }
+
                 try {
                     setLoading(true, "Escribiendo tu aventura...");
                     const story = await generateStoryText(storyData);
                     if (!story || !story.parrafos || story.parrafos.length === 0) {
                         throw new Error("La IA no generó párrafos para la historia. Inténtalo de nuevo.");
                     }
-                    
+                    currentStoryTitle = story.titulo;
+
                     setLoading(true, "Creando portada...");
                     const coverPrompt = `Crea una portada de libro infantil artística y llamativa. El título es "${story.titulo}". El personaje principal es ${storyData.character}, que es ${storyData.character_desc}. Estilo: ${storyData.style}. Sin texto.`;
-                    const coverImageUrl = await generateImage(coverPrompt, true);
+                    coverImageData = await generateImage(coverPrompt);
 
                     const visualModifiers = {
                         'variado': ['plano general amplio', 'primer plano emocional del personaje', 'toma de acción dinámica', 'vista desde un ángulo bajo', 'vista desde arriba', 'iluminación suave y cálida', 'silueta contra el atardecer', 'plano medio del personaje interactuando'],
@@ -641,18 +865,32 @@
                         'planos generales': ['plano general muy amplio mostrando el paisaje', 'vista panorámica', 'el personaje es pequeño en la escena', 'vista de pájaro']
                     };
                     const selectedModifierSet = visualModifiers[storyData.visual_modifier] || visualModifiers['variado'];
-                    setLoading(true, `Creando ilustraciones... (0/${story.parrafos.length})`);
+                    
                     const pages = [];
                     for (let i = 0; i < story.parrafos.length; i++) {
+                        setLoading(true, `Creando ilustraciones... (${i + 1}/${story.parrafos.length})`);
                         const paragraph = story.parrafos[i];
                         const randomModifier = selectedModifierSet[Math.floor(Math.random() * selectedModifierSet.length)];
                         const imagePrompt = `Ilustración para un libro de cuentos (${storyData.reading_level}) con un ${storyData.style}. El personaje principal es ${storyData.character}, que es ${storyData.character_desc}. La escena describe: "${paragraph}". Estilo visual: ${randomModifier}. Personaje consistente, sin texto.`;
                         const imageUrl = await generateImage(imagePrompt);
                         pages.push({ text: paragraph, imageUrl: imageUrl });
-                        setLoading(true, `Creando ilustraciones... (${i + 1}/${story.parrafos.length})`);
                     }
+                    
                     storyPagesData = pages;
-                    renderEbook(story.titulo, coverImageUrl, pages);
+                    renderEbook(story.titulo, coverImageData, pages);
+
+                    if (shouldSave && user) {
+                        const storyToSave = {
+                            title: story.titulo,
+                            coverImage: coverImageData,
+                            pages: pages,
+                            formData: storyData,
+                            createdAt: serverTimestamp()
+                        };
+                        await saveStoryToFirestore(user.uid, storyToSave);
+                        showToast('¡Tu cuento ha sido guardado!');
+                    }
+
                 } catch (error) {
                     console.error("Error generating story:", error);
                     displayError(error.message || "No se pudo generar el cuento. Inténtalo de nuevo.");
@@ -660,7 +898,42 @@
                     setLoading(false);
                 }
             }
+            
+            async function saveStoryToFirestore(userId, storyData) {
+                try {
+                    const storiesColRef = collection(db, 'artifacts', appId, 'users', userId, 'stories');
+                    await addDoc(storiesColRef, storyData);
+                } catch (error) {
+                    console.error("Error saving story to Firestore:", error);
+                    showToast("Error al guardar tu cuento.");
+                }
+            }
 
+            // --- API Call Functions ---
+
+            async function analyzePetImage(imageBase64Data) {
+                const prompt = "Analiza esta imagen. Primero, determina si contiene un animal doméstico (como un perro, gato, conejo, etc.). Responde ÚNICAMENTE con un objeto JSON válido. Si es una mascota, el JSON debe tener la forma `{\"isPet\": true, \"description\": \"Descripción detallada...\"}`. Si no es una mascota, el JSON debe ser `{\"isPet\": false, \"description\": \"\"}`. La descripción debe ser detallada, incluyendo especie, raza, colores, patrones y rasgos distintivos para que un ilustrador pueda dibujarlo consistentemente.";
+                const imageMimeType = imageBase64Data.split(';')[0].split(':')[1];
+                const pureBase64 = imageBase64Data.split(',')[1];
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }, { inlineData: { mimeType: imageMimeType, data: pureBase64 } }] }], generationConfig: { responseMimeType: "application/json" } };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) {
+                    const errorMessage = await handleApiError(response);
+                    throw new Error(`Error al analizar la imagen: ${errorMessage}`);
+                }
+                const result = await response.json();
+                if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    try { 
+                        return extractAndParseJson(text);
+                    } catch (e) { 
+                        throw new Error("La IA devolvió una respuesta inesperada para el análisis de la imagen."); 
+                    }
+                }
+                throw new Error("La IA no pudo analizar la imagen de la mascota.");
+            }
+            
             async function generateStoryText(data) {
                 const prompt = `Crea un cuento infantil. La historia debe ser rica, tener un desarrollo claro y una conclusión satisfactoria.
                     - Personaje principal: ${data.character} (${data.character_desc})
@@ -669,7 +942,7 @@
                     - Complejidad: ${data.reading_level}
                     Responde ÚNICAMENTE con un objeto JSON válido. El objeto debe contener un "titulo" y un array llamado "parrafos" con exactamente 8 párrafos de texto. Cada párrafo debe ser sustancioso para que la historia sea interesante.`;
                 const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${googleApiKey}`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                 const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if (!response.ok) {
                     const errorMessage = await handleApiError(response);
@@ -678,23 +951,25 @@
                 const result = await response.json();
                 if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
                     const text = result.candidates[0].content.parts[0].text;
-                    try { 
-                        const parsedJson = JSON.parse(text);
+                    try {
+                        const parsedJson = extractAndParseJson(text);
                         if (parsedJson && parsedJson.titulo && Array.isArray(parsedJson.parrafos)) {
                             return parsedJson;
                         } else {
+                            console.error("Parsed JSON is missing required fields (titulo, parrafos):", parsedJson);
                             throw new Error("La IA devolvió un JSON con formato incorrecto.");
                         }
-                    } 
-                    catch(e) { throw new Error("La IA devolvió una respuesta inesperada para la historia."); }
+                    } catch (e) {
+                        console.error("Error in generateStoryText after API call:", e);
+                        throw new Error("La IA devolvió una respuesta inesperada para la historia.");
+                    }
                 }
                 throw new Error("No se pudo generar el texto del cuento. Respuesta de la API vacía.");
             }
 
-            async function generateImage(prompt, isCover = false) {
-                console.log(`Generando imagen real para el prompt: "${prompt}"`);
+            async function generateImage(prompt) {
                 const payload = { instances: [{ prompt }], parameters: { "sampleCount": 1 } };
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${googleApiKey}`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
                 const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if (!response.ok) {
                     const errorMessage = await handleApiError(response);
@@ -707,403 +982,6 @@
                 throw new Error("No se pudo generar la ilustración.");
             }
             
-            function renderEbook(title, coverImage, pagesData) {
-                let bookHtml = '<div class="relative w-full aspect-[4/3] book">';
-                
-                // Portada mejorada
-                bookHtml += `<div id="page-0" class="page active grid grid-cols-1 bg-gradient-to-br from-indigo-400 via-purple-500 to-pink-500 p-8 rounded-lg overflow-hidden relative">
-                    <div class="absolute inset-0 bg-black/20"></div>
-                    <div class="absolute top-0 left-0 w-full h-full">
-                        <div class="absolute top-4 left-4 w-16 h-16 bg-yellow-300 rounded-full opacity-30 animate-pulse"></div>
-                        <div class="absolute top-20 right-8 w-8 h-8 bg-white rounded-full opacity-40"></div>
-                        <div class="absolute bottom-16 left-8 w-12 h-12 bg-pink-300 rounded-full opacity-25"></div>
-                        <div class="absolute bottom-4 right-4 w-6 h-6 bg-blue-300 rounded-full opacity-50"></div>
-                    </div>
-                    <div class="relative z-10 flex flex-col items-center justify-center h-full text-center">
-                        <div class="bg-white/95 backdrop-blur-lg rounded-3xl p-10 shadow-2xl max-w-lg border border-white/20">
-                            <div class="relative mb-8">
-                                <div class="w-40 h-40 mx-auto rounded-2xl bg-gradient-to-br from-yellow-200 via-orange-300 to-red-400 flex items-center justify-center overflow-hidden border-4 border-white shadow-xl transform rotate-2">
-                                    <img src="${coverImage}" class="w-full h-full object-cover transform -rotate-2" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                    <div class="w-full h-full flex items-center justify-center text-6xl transform -rotate-2" style="display: none;">🐾</div>
-                                </div>
-                                <div class="absolute -top-2 -right-2 w-8 h-8 bg-red-400 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg">★</div>
-                            </div>
-                            <h1 class="font-brand text-4xl md:text-5xl font-black text-gray-800 mb-4 leading-tight bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">${title}</h1>
-                            <div class="bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-4 mb-6">
-                                <p class="text-purple-800 font-bold text-lg">✨ Un Cuento Mágico ✨</p>
-                                <p class="text-purple-600 text-sm mt-1">Creado especialmente para ti con IA</p>
-                            </div>
-                            <div class="flex justify-center items-center space-x-3 text-2xl">
-                                <span class="animate-bounce">🌟</span>
-                                <span class="animate-pulse">❤️</span>
-                                <span class="animate-bounce">🎨</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-                
-                pagesData.forEach((page, index) => {
-                    bookHtml += `<div id="page-${index + 1}" class="page grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg border">
-                        <div class="flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 rounded-md overflow-hidden border-2 border-gray-200">
-                            <img src="${page.imageUrl}" alt="Ilustración para el cuento" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="this.nextElementSibling.style.display='none';">
-                            <div class="w-full h-full flex items-center justify-center text-gray-500">
-                                <div class="text-center p-8">
-                                    <div class="text-6xl mb-4">🎨</div>
-                                    <p class="text-lg font-medium text-gray-600">Ilustración</p>
-                                    <p class="text-sm text-gray-500 mt-2">Página ${index + 1}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex items-center p-6 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-md border-2 border-gray-200">
-                            <p class="text-gray-800 leading-relaxed text-lg">${page.text}</p>
-                        </div>
-                    </div>`;
-                });
-                
-                // Contraportada mejorada
-                bookHtml += `<div id="page-${pagesData.length + 1}" class="page grid grid-cols-1 bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 p-8 rounded-lg relative overflow-hidden">
-                    <div class="absolute inset-0 bg-black/10"></div>
-                    <div class="absolute top-0 left-0 w-full h-full">
-                        <div class="absolute top-8 right-12 w-20 h-20 bg-white/20 rounded-full"></div>
-                        <div class="absolute bottom-12 left-8 w-16 h-16 bg-yellow-300/30 rounded-full animate-pulse"></div>
-                        <div class="absolute top-1/3 left-12 w-12 h-12 bg-pink-300/40 rounded-full"></div>
-                        <div class="absolute bottom-1/4 right-16 w-8 h-8 bg-blue-300/50 rounded-full"></div>
-                    </div>
-                    <div class="relative z-10 flex flex-col items-center justify-center h-full text-center">
-                        <div class="bg-white/95 backdrop-blur-lg rounded-3xl p-10 shadow-2xl max-w-lg border border-white/30">
-                            <div class="relative mb-6">
-                                <div class="text-8xl mb-4 transform hover:scale-110 transition-transform">🏆</div>
-                                <div class="absolute -top-2 -right-8 w-6 h-6 bg-yellow-400 rounded-full animate-ping"></div>
-                            </div>
-                            <h2 class="font-brand text-5xl font-black text-transparent bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text mb-6">¡Fin del Cuento!</h2>
-                            <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 mb-6 border border-emerald-200">
-                                <p class="text-emerald-800 font-bold text-lg mb-3">🎉 ¡Misión Cumplida! 🎉</p>
-                                <p class="text-emerald-700 leading-relaxed text-base">
-                                    Has vivido una aventura increíble llena de magia, amistad y valentía. 
-                                    Cada página de esta historia fue creada especialmente para ti.
-                                </p>
-                            </div>
-                            <div class="space-y-3 mb-6">
-                                <div class="flex items-center justify-center space-x-2 text-emerald-600">
-                                    <span class="text-lg">✨</span>
-                                    <span class="text-sm font-medium">Historia única e irrepetible</span>
-                                </div>
-                                <div class="flex items-center justify-center space-x-2 text-teal-600">
-                                    <span class="text-lg">🤖</span>
-                                    <span class="text-sm font-medium">Generada con Inteligencia Artificial</span>
-                                </div>
-                                <div class="flex items-center justify-center space-x-2 text-cyan-600">
-                                    <span class="text-lg">❤️</span>
-                                    <span class="text-sm font-medium">Hecha con amor para ti</span>
-                                </div>
-                            </div>
-                            <div class="flex justify-center space-x-4 text-3xl mb-4">
-                                <span class="animate-bounce delay-0">🐾</span>
-                                <span class="animate-bounce delay-100">📚</span>
-                                <span class="animate-bounce delay-200">🌈</span>
-                                <span class="animate-bounce delay-300">⭐</span>
-                            </div>
-                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                                <p class="text-xs text-gray-600 font-medium">Creado con</p>
-                                <p class="text-sm font-bold text-pink-600">🐾 PetStories AI</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-                bookHtml += '</div>';
-                bookHtml += `<div class="mt-4 flex justify-between items-center w-full max-w-lg mx-auto"><button id="prev-btn" class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 disabled:opacity-50">&larr; Anterior</button><span id="page-indicator" class="text-sm text-gray-500"></span><button id="next-btn" class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300">&rarr; Siguiente</button></div>`;
-                bookHtml += `<div id="action-buttons" class="mt-6 text-center flex justify-center space-x-4"><button id="open-flipbook-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-md hover:bg-blue-700"><span>📖 Ver como Flipbook</span></button><button id="open-print-modal-btn" class="bg-purple-600 text-white font-bold py-2 px-6 rounded-md hover:bg-purple-700"><span>📚 ¡Imprímelo!</span></button></div>`;
-
-                ebookContent.innerHTML = bookHtml;
-                totalPages = pagesData.length + 2;
-                currentPage = 0;
-                updatePage();
-                document.getElementById('prev-btn').addEventListener('click', prevPage);
-                document.getElementById('next-btn').addEventListener('click', nextPage);
-                document.getElementById('open-flipbook-btn').addEventListener('click', () => openFlipbook(title));
-                document.getElementById('open-print-modal-btn').addEventListener('click', () => document.getElementById('print-order-modal').style.display = 'flex');
-            }
-            
-            function updatePage() { 
-                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                const currentPageElement = document.getElementById(`page-${currentPage}`);
-                if (currentPageElement) { currentPageElement.classList.add('active'); }
-                const prevBtn = document.getElementById('prev-btn');
-                const nextBtn = document.getElementById('next-btn');
-                if(prevBtn) prevBtn.disabled = currentPage === 0;
-                if(nextBtn) nextBtn.disabled = currentPage >= totalPages - 1;
-                const pageIndicator = document.getElementById('page-indicator');
-                if(pageIndicator) {
-                     if (currentPage === 0) { pageIndicator.textContent = 'Portada'; }
-                     else if (currentPage === totalPages - 1) { pageIndicator.textContent = 'Contraportada';}
-                     else { pageIndicator.textContent = `Página ${currentPage} de ${totalPages - 2}`;}
-                }
-            }
-            function prevPage() { if (currentPage > 0) { currentPage--; updatePage(); } }
-            function nextPage() { if (currentPage < totalPages - 1) { currentPage++; updatePage(); } }
-            function openFlipbook(title) { 
-                flipbookContainer.innerHTML = '';
-                
-                // Agregar botón de descarga en el flipbook
-                const downloadButton = document.createElement('button');
-                downloadButton.className = 'absolute top-4 left-4 bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-700 z-50 flex items-center';
-                downloadButton.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Descargar PDF';
-                downloadButton.addEventListener('click', () => downloadPDF(title));
-                flipbookContainer.appendChild(downloadButton);
-                
-                const cover = document.createElement('div');
-                cover.className = 'absolute w-1/2 h-full top-0 left-0 bg-pink-500 text-white p-8 rounded-lg flex items-center justify-center';
-                cover.innerHTML = `<div class="text-center"><h3 class="font-brand text-4xl">${title}</h3><p class="mt-4 opacity-80">Un cuento generado por IA</p></div>`;
-                flipbookContainer.appendChild(cover);
-                let zIndex = storyPagesData.length;
-                storyPagesData.forEach((pageData, index) => {
-                    const pageNum = index + 1;
-                    if (pageNum % 2 !== 0) { 
-                        const fbPage = document.createElement('div');
-                        fbPage.className = 'fb-page';
-                        fbPage.style.zIndex = zIndex--;
-                        const front = document.createElement('div');
-                        front.className = 'fb-front bg-white';
-                        front.innerHTML = `<div class="w-full h-full grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg border"><div class="flex items-center justify-center bg-gray-100 rounded-md overflow-hidden"><img src="${pageData.imageUrl}" class="w-full h-full object-cover"></div><div class="flex items-center p-4"><p class="text-gray-700 leading-relaxed">${pageData.text}</p></div></div>`;
-                        const back = document.createElement('div');
-                        back.className = 'fb-back bg-white';
-                        if (storyPagesData[pageNum]) {
-                             back.innerHTML = `<div class="w-full h-full grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg border"><div class="flex items-center justify-center bg-gray-100 rounded-md overflow-hidden"><img src="${storyPagesData[pageNum].imageUrl}" class="w-full h-full object-cover"></div><div class="flex items-center p-4"><p class="text-gray-700 leading-relaxed">${storyPagesData[pageNum].text}</p></div></div>`;
-                        } else {
-                             back.innerHTML = `<div class="w-full h-full bg-gray-100 p-4 rounded-lg border flex items-center justify-center"><p>Fin</p></div>`;
-                        }
-                        fbPage.appendChild(front);
-                        fbPage.appendChild(back);
-                        flipbookContainer.appendChild(fbPage);
-                        fbPage.addEventListener('click', () => {
-                            fbPage.classList.toggle('flipped');
-                        });
-                    }
-                });
-                flipbookModal.style.display = 'flex';
-            }
-            function createFallbackCanvas(width, height, text, pageNumber = null) {
-                const canvas = document.createElement('canvas');
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                
-                // Fondo con gradiente
-                const gradient = ctx.createLinearGradient(0, 0, width, height);
-                gradient.addColorStop(0, '#f8fafc');
-                gradient.addColorStop(1, '#e2e8f0');
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, width, height);
-                
-                // Borde decorativo
-                ctx.strokeStyle = '#cbd5e1';
-                ctx.lineWidth = 4;
-                ctx.strokeRect(20, 20, width - 40, height - 40);
-                
-                // Título principal
-                ctx.fillStyle = '#1e293b';
-                ctx.font = 'bold 40px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(text, width / 2, height / 2 - 40);
-                
-                // Número de página si se proporciona
-                if (pageNumber !== null) {
-                    ctx.fillStyle = '#64748b';
-                    ctx.font = '24px Arial';
-                    ctx.fillText(`Página ${pageNumber}`, width / 2, height / 2 + 20);
-                }
-                
-                // Decoración
-                ctx.fillStyle = '#f59e0b';
-                ctx.font = '60px Arial';
-                ctx.fillText('🐾', width / 2, height / 2 + 80);
-                
-                return canvas;
-            }
-
-            async function validateAndFixImage(imageUrl) {
-                try {
-                    // Crear una imagen temporal para validar
-                    const img = new Image();
-                    return new Promise((resolve) => {
-                        img.onload = () => {
-                            // Si la imagen se carga correctamente, crear un canvas limpio
-                            const canvas = document.createElement('canvas');
-                            canvas.width = img.width || 400;
-                            canvas.height = img.height || 400;
-                            const ctx = canvas.getContext('2d');
-                            
-                            try {
-                                ctx.drawImage(img, 0, 0);
-                                resolve(canvas.toDataURL('image/png'));
-                            } catch (drawError) {
-                                console.error("Error drawing image:", drawError);
-                                resolve(null);
-                            }
-                        };
-                        img.onerror = () => {
-                            console.error("Image load error for:", imageUrl);
-                            resolve(null);
-                        };
-                        img.crossOrigin = "anonymous";
-                        img.src = imageUrl;
-                        
-                        // Timeout después de 3 segundos
-                        setTimeout(() => {
-                            resolve(null);
-                        }, 3000);
-                    });
-                } catch (error) {
-                    console.error("Error validating image:", error);
-                    return null;
-                }
-            }
-
-            async function downloadPDF(title) {
-                const downloadBtn = document.getElementById('download-pdf-btn');
-                const originalBtnText = downloadBtn.innerHTML;
-                downloadBtn.disabled = true;
-                downloadBtn.innerHTML = `<span class="loader-small"></span>Creando PDF...`;
-                const originalCurrentPage = currentPage;
-                
-                try {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF({ orientation: 'landscape', unit: 'px' });
-                    const pageWidth = doc.internal.pageSize.getWidth();
-                    const pageHeight = doc.internal.pageSize.getHeight();
-                    
-                    setLoading(true, "Preparando portada...");
-                    
-                    // Crear portada con fallback
-                    const coverCanvas = createFallbackCanvas(800, 600, title);
-                    doc.addImage(coverCanvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
-
-                    // Renderizar páginas del cuento
-                    for (let i = 0; i < storyPagesData.length; i++) {
-                        setLoading(true, `Procesando página ${i + 1} de ${storyPagesData.length}...`);
-                        
-                        const pageData = storyPagesData[i];
-                        
-                        // Crear página con diseño simple y robusto
-                        const pageCanvas = document.createElement('canvas');
-                        pageCanvas.width = 1000;
-                        pageCanvas.height = 700;
-                        const ctx = pageCanvas.getContext('2d');
-                        
-                        // Fondo blanco
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillRect(0, 0, 1000, 700);
-                        
-                        // Área de imagen (lado izquierdo)
-                        ctx.fillStyle = '#f8fafc';
-                        ctx.fillRect(50, 50, 400, 600);
-                        ctx.strokeStyle = '#e2e8f0';
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(50, 50, 400, 600);
-                        
-                        // Intentar cargar la imagen real
-                        const validatedImage = await validateAndFixImage(pageData.imageUrl);
-                        if (validatedImage) {
-                            try {
-                                const img = new Image();
-                                img.src = validatedImage;
-                                await new Promise((resolve) => {
-                                    img.onload = () => {
-                                        ctx.drawImage(img, 60, 60, 380, 580);
-                                        resolve();
-                                    };
-                                    img.onerror = resolve;
-                                    setTimeout(resolve, 1000);
-                                });
-                            } catch (imgError) {
-                                console.error(`Error loading image for page ${i + 1}:`, imgError);
-                                // Dibujar placeholder
-                                ctx.fillStyle = '#6b7280';
-                                ctx.font = '40px Arial';
-                                ctx.textAlign = 'center';
-                                ctx.fillText('🖼️', 250, 320);
-                                ctx.font = '20px Arial';
-                                ctx.fillText('Ilustración', 250, 360);
-                            }
-                        } else {
-                            // Dibujar placeholder
-                            ctx.fillStyle = '#6b7280';
-                            ctx.font = '40px Arial';
-                            ctx.textAlign = 'center';
-                            ctx.fillText('🖼️', 250, 320);
-                            ctx.font = '20px Arial';
-                            ctx.fillText('Ilustración', 250, 360);
-                        }
-                        
-                        // Área de texto (lado derecho)
-                        ctx.fillStyle = '#f9fafb';
-                        ctx.fillRect(500, 50, 450, 600);
-                        ctx.strokeStyle = '#e2e8f0';
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(500, 50, 450, 600);
-                        
-                        // Escribir el texto con saltos de línea
-                        ctx.fillStyle = '#1f2937';
-                        ctx.font = '18px Arial';
-                        ctx.textAlign = 'left';
-                        
-                        const words = pageData.text.split(' ');
-                        let line = '';
-                        let y = 120;
-                        const maxWidth = 400;
-                        
-                        for (let n = 0; n < words.length; n++) {
-                            const testLine = line + words[n] + ' ';
-                            const metrics = ctx.measureText(testLine);
-                            const testWidth = metrics.width;
-                            
-                            if (testWidth > maxWidth && n > 0) {
-                                ctx.fillText(line, 520, y);
-                                line = words[n] + ' ';
-                                y += 25;
-                            } else {
-                                line = testLine;
-                            }
-                        }
-                        ctx.fillText(line, 520, y);
-                        
-                        // Añadir página al PDF
-                        doc.addPage([pageWidth, pageHeight], 'landscape');
-                        doc.addImage(pageCanvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
-                    }
-
-                    // Contraportada
-                    setLoading(true, "Preparando contraportada...");
-                    doc.addPage([pageWidth, pageHeight], 'landscape');
-                    const backCoverCanvas = createFallbackCanvas(800, 600, '¡Fin del Cuento!');
-                    doc.addImage(backCoverCanvas.toDataURL('image/png'), 'PNG', 0, 0, pageWidth, pageHeight);
-
-                    // Guardar PDF
-                    const cleanTitle = title.replace(/[^a-zA-Z0-9]/g, '_');
-                    doc.save(`${cleanTitle}.pdf`);
-                    
-                    // Mostrar mensaje de éxito
-                    setLoading(true, "¡PDF creado exitosamente!");
-                    setTimeout(() => setLoading(false), 2000);
-                    
-                } catch(error) {
-                    console.error("Error creating PDF:", error);
-                    displayError("No se pudo crear el PDF: " + (error.message || "Error desconocido"));
-                } finally {
-                    downloadBtn.disabled = false;
-                    downloadBtn.innerHTML = originalBtnText;
-                    currentPage = originalCurrentPage;
-                    updatePage();
-                    setTimeout(() => setLoading(false), 100);
-                }
-            }
-            function readFileAsBase64(file) {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = (error) => reject(error);
-                });
-            }
             async function handlePlotSuggestion() {
                 const characterName = document.getElementById('character').value;
                 const characterDesc = document.getElementById('character_desc').value;
@@ -1111,7 +989,7 @@
                 const readingLevel = document.getElementById('reading_level').value;
 
                 if (!characterName || !setting) {
-                    alert("Por favor, define primero el personaje y el lugar.");
+                    showToast("Por favor, define primero el personaje y el lugar.");
                     return;
                 }
 
@@ -1120,22 +998,20 @@
 
                 try {
                     const prompt = `Basado en el personaje "${characterName}" que es ${characterDesc}, en el mundo de "${setting}" y para un nivel de lectura ${readingLevel}, genera 3 ideas cortas y emocionantes para una trama de cuento. Responde ÚNICAMENTE con un objeto JSON que contenga un array de strings llamado "tramas". Ejemplo: {"tramas": ["Idea 1", "Idea 2", "Idea 3"]}`;
-                    
                     const payload = {
                         contents: [{ role: "user", parts: [{ text: prompt }] }],
                         generationConfig: { responseMimeType: "application/json" }
                     };
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${googleApiKey}`;
-                    
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    
+
                     if (!response.ok) {
                         const errorMsg = await handleApiError(response);
                         throw new Error(`Error al sugerir tramas: ${errorMsg}`);
                     }
 
                     const result = await response.json();
-                    const suggestions = JSON.parse(result.candidates[0].content.parts[0].text);
+                    const suggestions = extractAndParseJson(result.candidates[0].content.parts[0].text);
 
                     plotSuggestionsContainer.innerHTML = '';
                     if (suggestions.tramas && suggestions.tramas.length > 0) {
@@ -1158,6 +1034,251 @@
                 } finally {
                     suggestPlotBtn.disabled = false;
                 }
+            }
+            
+            // --- Ebook Rendering and Export ---
+
+            function renderEbook(title, coverImage, pagesData) {
+                let bookHtml = '';
+                
+                // Cover
+                bookHtml += `<div id="page-0" class="page active grid grid-cols-1 bg-gradient-to-br from-indigo-400 via-purple-500 to-pink-500 p-8 rounded-lg overflow-hidden relative shadow-2xl">
+                    <div class="absolute inset-0 bg-black/20"></div>
+                    <div class="relative z-10 flex flex-col items-center justify-center h-full text-center">
+                        <div class="bg-white/95 backdrop-blur-lg rounded-3xl p-6 md:p-10 shadow-2xl max-w-lg border border-white/20">
+                            <div class="w-32 h-32 md:w-40 md:h-40 mx-auto rounded-2xl bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-white shadow-xl mb-6">
+                                <img src="${coverImage}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/200x200/cccccc/333333?text=🐾'">
+                            </div>
+                            <h1 class="font-brand text-4xl md:text-5xl font-black text-gray-800 mb-4 leading-tight bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">${title}</h1>
+                            <p class="text-purple-700 font-semibold text-lg">✨ Un Cuento Mágico ✨</p>
+                        </div>
+                    </div>
+                </div>`;
+
+                // Content Pages
+                pagesData.forEach((page, index) => {
+                    bookHtml += `<div id="page-${index + 1}" class="page grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg border">
+                        <div class="flex items-center justify-center bg-gray-100 rounded-md overflow-hidden border">
+                           <img src="${page.imageUrl}" alt="Ilustración para el cuento" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x400/e0e7ff/3730a3?text=🎨'">
+                        </div>
+                        <div class="flex items-center p-4 md:p-6 bg-gray-50 rounded-md border">
+                            <p class="text-gray-700 leading-relaxed text-base md:text-lg">${page.text}</p>
+                        </div>
+                    </div>`;
+                });
+
+                // Back Cover
+                bookHtml += `<div id="page-${pagesData.length + 1}" class="page grid grid-cols-1 bg-gradient-to-br from-emerald-400 to-cyan-600 p-8 rounded-lg shadow-2xl">
+                    <div class="flex flex-col items-center justify-center h-full text-center text-white">
+                         <div class="bg-white/95 backdrop-blur-lg rounded-3xl p-10 shadow-2xl max-w-lg border border-white/30">
+                            <div class="text-8xl mb-4">🏆</div>
+                            <h2 class="font-brand text-5xl font-black text-transparent bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text mb-6">¡Fin!</h2>
+                            <p class="text-emerald-700 leading-relaxed text-base">Esperamos que hayas disfrutado la aventura.</p>
+                         </div>
+                    </div>
+                </div>`;
+
+                ebookContent.innerHTML = bookHtml;
+                totalPages = pagesData.length + 2;
+                currentPage = 0;
+                updatePage();
+                
+                const controlsHtml = `
+                    <div class="mt-4 flex justify-between items-center w-full max-w-md mx-auto">
+                        <button id="prev-btn" class="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition">←</button>
+                        <span id="page-indicator" class="text-sm font-semibold text-gray-600"></span>
+                        <button id="next-btn" class="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition">→</button>
+                    </div>
+                    <div id="action-buttons" class="mt-6 text-center flex flex-wrap justify-center gap-4">
+                        <button id="open-flipbook-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-700 transition">📖 Ver como Flipbook</button>
+                        <button id="download-pdf-btn" class="bg-green-600 text-white font-bold py-2 px-6 rounded-full hover:bg-green-700 transition">📄 Descargar PDF</button>
+                        <button id="open-print-modal-btn" class="bg-purple-600 text-white font-bold py-2 px-6 rounded-full hover:bg-purple-700 transition">📚 ¡Imprímelo!</button>
+                    </div>`;
+
+                ebookContainer.insertAdjacentHTML('beforeend', controlsHtml);
+                
+                document.getElementById('prev-btn').addEventListener('click', prevPage);
+                document.getElementById('next-btn').addEventListener('click', nextPage);
+                document.getElementById('open-flipbook-btn').addEventListener('click', () => openFlipbook(title));
+                document.getElementById('download-pdf-btn').addEventListener('click', () => downloadPDF(title));
+                document.getElementById('open-print-modal-btn').addEventListener('click', () => document.getElementById('print-order-modal').style.display = 'flex');
+            }
+
+            function updatePage() {
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                const currentPageElement = document.getElementById(`page-${currentPage}`);
+                if (currentPageElement) { currentPageElement.classList.add('active'); }
+                
+                const prevBtn = document.getElementById('prev-btn');
+                const nextBtn = document.getElementById('next-btn');
+                if(prevBtn) prevBtn.disabled = currentPage === 0;
+                if(nextBtn) nextBtn.disabled = currentPage >= totalPages - 1;
+                
+                const pageIndicator = document.getElementById('page-indicator');
+                if(pageIndicator) {
+                    if (currentPage === 0) { pageIndicator.textContent = 'Portada'; }
+                    else if (currentPage === totalPages - 1) { pageIndicator.textContent = 'Contraportada'; }
+                    else { pageIndicator.textContent = `Página ${currentPage} de ${totalPages - 2}`; }
+                }
+            }
+
+            function prevPage() { if (currentPage > 0) { currentPage--; updatePage(); } }
+            function nextPage() { if (currentPage < totalPages - 1) { currentPage++; updatePage(); } }
+
+            function openFlipbook(title) {
+                flipbookContainer.innerHTML = '';
+                
+                const cover = document.createElement('div');
+                cover.className = 'absolute w-1/2 h-full top-0 left-0 bg-pink-500 text-white p-8 rounded-l-lg flex items-center justify-center';
+                cover.innerHTML = `<div class="text-center"><h3 class="font-brand text-4xl">${title}</h3><p class="mt-4 opacity-80">Un cuento generado por IA</p></div>`;
+                flipbookContainer.appendChild(cover);
+
+                let zIndex = storyPagesData.length;
+                for (let i = 0; i < storyPagesData.length; i += 2) {
+                    const fbPage = document.createElement('div');
+                    fbPage.className = 'fb-page';
+                    fbPage.style.zIndex = zIndex--;
+
+                    const front = document.createElement('div');
+                    front.className = 'fb-front p-4 border rounded-r-lg';
+                    front.innerHTML = `<div class="w-full h-full flex flex-col gap-4">
+                        <div class="flex-1 bg-gray-100 rounded overflow-hidden"><img src="${storyPagesData[i].imageUrl}" class="w-full h-full object-cover"></div>
+                        <p class="text-gray-700 text-sm leading-snug h-1/3 overflow-y-auto p-2">${storyPagesData[i].text}</p>
+                    </div>`;
+                    
+                    const back = document.createElement('div');
+                    back.className = 'fb-back p-4 border rounded-l-lg';
+                    if (storyPagesData[i+1]) {
+                         back.innerHTML = `<div class="w-full h-full flex flex-col gap-4">
+                            <div class="flex-1 bg-gray-100 rounded overflow-hidden"><img src="${storyPagesData[i+1].imageUrl}" class="w-full h-full object-cover"></div>
+                            <p class="text-gray-700 text-sm leading-snug h-1/3 overflow-y-auto p-2">${storyPagesData[i+1].text}</p>
+                        </div>`;
+                    } else {
+                        back.innerHTML = `<div class="w-full h-full flex items-center justify-center"><p>Fin</p></div>`;
+                    }
+
+                    fbPage.appendChild(front);
+                    fbPage.appendChild(back);
+                    flipbookContainer.appendChild(fbPage);
+                    fbPage.addEventListener('click', () => {
+                        fbPage.classList.toggle('flipped');
+                    });
+                }
+                flipbookModal.style.display = 'flex';
+            }
+
+            async function downloadPDF(title) {
+                const downloadBtn = document.getElementById('download-pdf-btn');
+                if (!downloadBtn || downloadBtn.disabled) return;
+
+                const originalBtnContent = downloadBtn.innerHTML;
+                downloadBtn.disabled = true;
+                downloadBtn.innerHTML = `<span class="loader-small"></span>Creando PDF...`;
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+
+                try {
+                    // --- Cover Page ---
+                    showToast('Creando portada...');
+                    doc.setFillColor(236, 72, 153); // Pink
+                    doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
+                    if (coverImageData) {
+                         try {
+                            const img = new Image();
+                            img.crossOrigin = "anonymous";
+                            const imgPromise = new Promise((resolve, reject) => {
+                                img.onload = resolve;
+                                img.onerror = reject;
+                            });
+                            img.src = coverImageData;
+                            await imgPromise;
+                            doc.addImage(img, 'PNG', doc.internal.pageSize.width / 2 - 100, 150, 200, 200);
+                        } catch (e) {
+                            console.error("Error loading cover image for PDF:", e);
+                            doc.text('🐾', doc.internal.pageSize.width / 2, 250, { align: 'center' });
+                        }
+                    }
+                    doc.setFont('Helvetica', 'bold');
+                    doc.setFontSize(40);
+                    doc.setTextColor(255, 255, 255);
+                    doc.text(title, doc.internal.pageSize.width / 2, 100, { align: 'center' });
+                    doc.setFontSize(20);
+                    doc.text('Un Cuento Mágico', doc.internal.pageSize.width / 2, 400, { align: 'center' });
+
+
+                    // --- Content Pages ---
+                    for (let i = 0; i < storyPagesData.length; i++) {
+                        showToast(`Procesando página ${i + 1} de ${storyPagesData.length}...`);
+                        doc.addPage();
+                        const page = storyPagesData[i];
+                        const pageXMargin = 40;
+                        const pageYMargin = 40;
+                        const imageWidth = doc.internal.pageSize.width / 2 - pageXMargin * 1.5;
+                        const imageHeight = doc.internal.pageSize.height - pageYMargin * 2;
+                        
+                        // Add Image
+                        if (page.imageUrl) {
+                            try {
+                                const img = new Image();
+                                img.crossOrigin = "anonymous";
+                                const imgPromise = new Promise((resolve, reject) => {
+                                    img.onload = resolve;
+                                    img.onerror = reject;
+                                });
+                                img.src = page.imageUrl;
+                                await imgPromise;
+                                doc.addImage(img, 'PNG', pageXMargin, pageYMargin, imageWidth, imageHeight);
+                            } catch (e) {
+                                console.error(`Error loading image for page ${i+1}:`, e);
+                                doc.setFillColor(243, 244, 246);
+                                doc.rect(pageXMargin, pageYMargin, imageWidth, imageHeight, 'F');
+                                doc.setTextColor(156, 163, 175);
+                                doc.text('🎨', pageXMargin + imageWidth / 2, pageYMargin + imageHeight / 2, { align: 'center' });
+                            }
+                        }
+
+                        // Add Text
+                        doc.setFont('Helvetica', 'normal');
+                        doc.setFontSize(12);
+                        doc.setTextColor(0, 0, 0);
+                        const textX = doc.internal.pageSize.width / 2 + pageXMargin / 2;
+                        const textWidth = doc.internal.pageSize.width / 2 - pageXMargin * 1.5;
+                        const textLines = doc.splitTextToSize(page.text, textWidth);
+                        doc.text(textLines, textX, pageYMargin + 20);
+                    }
+
+                    // --- Back Cover ---
+                    doc.addPage();
+                    doc.setFillColor(34, 197, 94); // Green
+                    doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
+                    doc.setFont('Helvetica', 'bold');
+                    doc.setFontSize(60);
+                    doc.setTextColor(255, 255, 255);
+                    doc.text('¡Fin!', doc.internal.pageSize.width / 2, doc.internal.pageSize.height / 2, { align: 'center' });
+
+                    // --- Save ---
+                    const cleanTitle = title.replace(/[^a-zA-Z0-9]/g, '_');
+                    doc.save(`${cleanTitle}.pdf`);
+                    showToast("¡PDF descargado exitosamente!");
+
+                } catch (error) {
+                    console.error("Error creating PDF:", error);
+                    displayError("No se pudo crear el PDF. " + (error.message || "Error desconocido. Revisa la consola."));
+                } finally {
+                    downloadBtn.disabled = false;
+                    downloadBtn.innerHTML = `📄 Descargar PDF`;
+                }
+            }
+
+            // --- Utility Functions ---
+            function readFileAsBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = (error) => reject(error);
+                    reader.readAsDataURL(file);
+                });
             }
         });
     </script>
