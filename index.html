@@ -442,10 +442,24 @@
         // --- INICIO DEL CÓDIGO DE LA APLICACIÓN ---
         document.addEventListener('DOMContentLoaded', () => {
 
-            // --- App Config (Provided by Environment) ---
+            // --- App Config (Provided by Environment or User) ---
+            // INSTRUCCIONES: Reemplaza el objeto 'userFirebaseConfig' con tu propia configuración de Firebase.
+            // Puedes obtenerla desde la consola de Firebase de tu proyecto:
+            // Project Settings > General > Your apps > SDK setup and configuration > Config
+            // IMPORTANTE: También debes habilitar los proveedores de inicio de sesión (Google, Facebook, Email/Password)
+            // en la sección de Authentication > Sign-in method de tu consola de Firebase.
+            const userFirebaseConfig = {
+              apiKey: "AIzaSy...REEMPLAZA_CON_TU_API_KEY",
+              authDomain: "TU_PROJECT_ID.firebaseapp.com",
+              projectId: "TU_PROJECT_ID",
+              storageBucket: "TU_PROJECT_ID.appspot.com",
+              messagingSenderId: "TU_SENDER_ID",
+              appId: "TU_APP_ID"
+            };
+
             const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-            const apiKey = ""; // This will be populated by the environment.
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : userFirebaseConfig;
+            const apiKey = ""; // This will be populated by the environment for AI calls.
 
             // --- DOM Elements ---
             const storyForm = document.getElementById('story-form');
@@ -509,9 +523,16 @@
             initApp();
 
             async function initApp() {
-                if (!firebaseConfig) {
-                    console.error("Firebase config is missing.");
-                    displayError("La configuración para conectar con la base de datos no está disponible.");
+                if (!firebaseConfig || firebaseConfig.apiKey.includes("REEMPLAZA")) {
+                    console.error("Firebase config is not set. Please update the userFirebaseConfig object in the script.");
+                    const body = document.querySelector('body');
+                    body.innerHTML = `<div class="h-screen w-screen flex items-center justify-center p-4 bg-gray-100">
+                        <div class="text-center text-red-700 bg-red-100 p-8 rounded-lg shadow-2xl max-w-2xl">
+                            <h3 class="font-brand font-bold text-3xl text-red-800">Error de Configuración Crítico</h3>
+                            <p class="text-lg mt-4 text-gray-800">La aplicación no puede conectar con la base de datos.</p>
+                            <p class="mt-4 text-gray-700">Por favor, edita el archivo HTML y sigue las instrucciones en el código para añadir tus credenciales de Firebase en el objeto <strong>userFirebaseConfig</strong>. Asegúrate también de haber habilitado los proveedores de inicio de sesión (Google, Facebook, etc.) en tu consola de Firebase.</p>
+                        </div>
+                    </div>`;
                     return;
                 }
                 try {
@@ -523,7 +544,7 @@
 
                 } catch (error) {
                     console.error("Firebase Initialization Error:", error);
-                    displayError("Error al iniciar la aplicación.");
+                    displayError("Error al iniciar la aplicación. Revisa la configuración de Firebase.");
                 }
                 
                 setupEventListeners();
@@ -663,6 +684,7 @@
                     case 'auth/weak-password': return 'La contraseña debe tener al menos 6 caracteres.';
                     case 'auth/account-exists-with-different-credential': return 'Ya existe una cuenta con este email. Prueba a iniciar sesión con otro método.';
                     case 'auth/popup-closed-by-user': return 'Has cerrado la ventana de inicio de sesión.';
+                    case 'auth/operation-not-allowed': return 'Este método de inicio de sesión no está habilitado. Actívalo en tu consola de Firebase.';
                     default: return 'Ha ocurrido un error. Inténtalo de nuevo.';
                 }
             }
