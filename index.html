@@ -457,10 +457,11 @@
       messagingSenderId: "90799928498",
       appId: "1:90799928498:web:d503295ddaec2822dd45ab",
     };
-            const userGoogleAiApiKey = "AIzaSyBLsNvpfVDDxRSfDMo3LHOKkxYA2b-KFgA";
-
+            
     // (Opcional: permite override para pruebas o despliegue)
     const finalFirebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : firebaseConfig;
+ --- CONFIGURACIÓN GOOGLE AI ---
+const userGoogleAiApiKey = ""; // <--- Pega aquí tu API KEY de Google AI
 
     // --- INICIALIZACIÓN ROBUSTA ---
     let auth, db;
