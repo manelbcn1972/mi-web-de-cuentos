@@ -148,18 +148,16 @@
                 <a href="#" class="text-gray-600 hover:text-pink-500">Inicio</a>
                 <a href="#como-funciona" class="text-gray-600 hover:text-pink-500">¿Cómo funciona?</a>
                 <a href="#crear-cuento" class="text-gray-600 hover:text-pink-500">Crear Cuento</a>
-                <a href="#mis-cuentos" class="text-gray-600 hover:text-pink-500">Mis Cuentos</a>
             </div>
             <div id="auth-container" class="relative">
                 <button id="auth-button" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-full hover:bg-blue-600 transition-colors">
                     Iniciar Sesión
                 </button>
-                <div id="user-dropdown" class="hidden absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-xl z-20">
-                     <div class="p-4 border-b">
-                        <p id="user-dropdown-name" class="font-semibold text-gray-800"></p>
-                        <p id="user-dropdown-email" class="text-sm text-gray-500"></p>
-                    </div>
-                    <a id="logout-btn" href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cerrar Sesión</a>
+                <div id="user-info" class="hidden items-center gap-x-4">
+                    <span id="user-greeting" class="font-semibold text-gray-700"></span>
+                    <button id="logout-btn" class="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-full hover:bg-gray-300 transition-colors">
+                        Cerrar Sesión
+                    </button>
                 </div>
             </div>
         </div>
@@ -339,13 +337,6 @@
             </div>
         </section>
         
-        <section id="mis-cuentos" class="mt-24 text-center hidden">
-            <h2 class="font-brand text-4xl font-bold text-gray-800">Mi Biblioteca de Cuentos</h2>
-            <p class="mt-2 text-gray-500">Aquí están todas las aventuras que has creado.</p>
-            <div id="saved-stories-grid" class="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Saved stories will be injected here -->
-            </div>
-        </section>
     </div>
     <footer class="bg-white mt-16 py-8">
         <div class="container mx-auto text-center text-gray-500">
@@ -357,30 +348,17 @@
     <div id="auth-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full relative">
             <button id="close-auth-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
-            <h2 class="font-brand text-3xl font-bold text-gray-800 mb-6 text-center">Únete a la Aventura</h2>
-            <div class="space-y-4">
-                <button id="google-login-btn" class="w-full flex items-center justify-center bg-white border border-gray-300 text-gray-700 font-semibold py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors">
-                    <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" alt="Google Logo" class="h-6 mr-3">
-                    Continuar con Google
-                </button>
-                <button id="facebook-login-btn" class="w-full flex items-center justify-center bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-                     <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path></svg>
-                    Continuar con Facebook
-                </button>
-            </div>
-            <div class="my-6 flex items-center">
-                <hr class="flex-grow border-t border-gray-300">
-                <span class="mx-4 text-gray-500 text-sm">O</span>
-                <hr class="flex-grow border-t border-gray-300">
-            </div>
+            <h2 id="auth-title" class="font-brand text-3xl font-bold text-gray-800 mb-6 text-center">Únete a la Aventura</h2>
             <form id="email-form" class="space-y-4">
+                <input type="text" id="name-input" placeholder="Tu nombre" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 hidden">
                 <input type="email" id="email-input" placeholder="Correo electrónico" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
                 <input type="password" id="password-input" placeholder="Contraseña" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
                 <p id="auth-error-message" class="text-red-500 text-sm text-center h-4"></p>
-                <div class="flex gap-4">
-                    <button type="button" id="email-login-btn" class="w-full bg-pink-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-pink-600 transition-colors">Iniciar Sesión</button>
-                    <button type="button" id="email-register-btn" class="w-full bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors">Registrarse</button>
-                </div>
+                <button type="submit" id="auth-submit-btn" class="w-full bg-pink-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-pink-600 transition-colors">Registrarse</button>
+                <p class="text-center text-sm text-gray-500">
+                    <span id="auth-prompt-text">¿Ya tienes una cuenta?</span>
+                    <a href="#" id="auth-toggle-link" class="font-semibold text-pink-500 hover:underline">Inicia Sesión</a>
+                </p>
             </form>
         </div>
     </div>
@@ -417,52 +395,13 @@
     <div id="toast-notification"></div>
 
     <script type="module">
-        // Firebase SDK imports
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { 
-            getAuth, 
-            onAuthStateChanged,
-            signInAnonymously,
-            GoogleAuthProvider,
-            FacebookAuthProvider,
-            signInWithRedirect,
-            getRedirectResult,
-            createUserWithEmailAndPassword,
-            signInWithEmailAndPassword,
-            signOut
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { 
-            getFirestore, 
-            collection, 
-            addDoc, 
-            query, 
-            onSnapshot,
-            serverTimestamp
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
         // --- INICIO DEL CÓDIGO DE LA APLICACIÓN ---
         document.addEventListener('DOMContentLoaded', () => {
 
             // --- App Config (Provided by User) ---
-            // INSTRUCCIONES: Reemplaza el objeto 'firebaseConfig' con tu propia configuración de Firebase.
-            // Puedes obtenerla desde la consola de Firebase de tu proyecto:
-            // Project Settings > General > Your apps > SDK setup and configuration > Config
-            // IMPORTANTE: También debes habilitar los proveedores de inicio de sesión (Google, Facebook, Email/Password)
-            // en la sección de Authentication > Sign-in method de tu consola de Firebase.
-         const firebaseConfig = {
-              apiKey: "AIzaSyC9UIreovgnWHpwYT_idZSAvm0JlyPk6Ok",
-              authDomain: "petstories-app.firebaseapp.com",
-		projectId: "petstories-app",
-        storageBucket: "petstories-app.appspot.com",
-              messagingSenderId: "90799928498",
-            appId: "1:90799928498:web:d503295ddaec2822dd45ab",
-            }
-
             // INSTRUCCIONES: Reemplaza la cadena vacía con tu clave de API de Google AI Studio.
             // Puedes obtenerla en https://aistudio.google.com/app/apikey
             const googleAiApiKey = "AIzaSyBLsNvpfVDDxRSfDMo3LHOKkxYA2b-KFgA";
-
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             
             // --- DOM Elements ---
             const storyForm = document.getElementById('story-form');
@@ -486,24 +425,22 @@
             const cancelPrintBtn = document.getElementById('cancel-print-btn');
             const printForm = document.getElementById('print-form');
             const toast = document.getElementById('toast-notification');
-            const savedStoriesSection = document.getElementById('mis-cuentos');
-            const savedStoriesGrid = document.getElementById('saved-stories-grid');
             
             // Auth UI Elements
             const authModal = document.getElementById('auth-modal');
             const authButton = document.getElementById('auth-button');
             const closeAuthModalBtn = document.getElementById('close-auth-modal');
-            const googleLoginBtn = document.getElementById('google-login-btn');
-            const facebookLoginBtn = document.getElementById('facebook-login-btn');
             const emailForm = document.getElementById('email-form');
+            const nameInput = document.getElementById('name-input');
             const emailInput = document.getElementById('email-input');
             const passwordInput = document.getElementById('password-input');
-            const emailLoginBtn = document.getElementById('email-login-btn');
-            const emailRegisterBtn = document.getElementById('email-register-btn');
             const authErrorMessage = document.getElementById('auth-error-message');
-            const userDropdown = document.getElementById('user-dropdown');
-            const userDropdownName = document.getElementById('user-dropdown-name');
-            const userDropdownEmail = document.getElementById('user-dropdown-email');
+            const authTitle = document.getElementById('auth-title');
+            const authSubmitBtn = document.getElementById('auth-submit-btn');
+            const authPromptText = document.getElementById('auth-prompt-text');
+            const authToggleLink = document.getElementById('auth-toggle-link');
+            const userInfo = document.getElementById('user-info');
+            const userGreeting = document.getElementById('user-greeting');
             const logoutBtn = document.getElementById('logout-btn');
 
 
@@ -513,8 +450,8 @@
             let storyPagesData = [];
             let currentStoryTitle = '';
             let coverImageData = '';
-            let db, auth;
-            let unsubscribeFromStories;
+            let currentUser = null; // Simulated user session
+            let isRegisterMode = true; // Start in register mode
 
             const exampleStories = {
                 'example-lara': { character: 'Lara', character_desc: 'Una perrita golden retriever, joven y aventurera, con un pelaje dorado brillante y una bandana roja en el cuello.', setting: 'Un jardín trasero que esconde secretos antiguos y caminos inexplorados.', plot: 'Lara descubre un mapa misterioso enterrado bajo su rosal favorito. El mapa la guía en una emocionante búsqueda del legendario Tesoro Perdido de los Ladridos, enfrentándose a ardillas astutas y topos gruñones en el camino.', style: 'estilo acuarela digital', reading_level: 'para niños de 7 a 12 años', visual_modifier: 'variado' },
@@ -525,39 +462,13 @@
             // --- Initialization ---
             initApp();
 
-            async function initApp() {
-                if (!firebaseConfig || firebaseConfig.apiKey.includes("REEMPLAZA")) {
-                    showConfigurationError("La configuración de Firebase no está completa. Por favor, sigue las instrucciones en el código para añadir tus credenciales de Firebase y poder usar la aplicación.");
-                    return;
-                }
+            function initApp() {
                  if (!googleAiApiKey || googleAiApiKey.includes("REEMPLAZA")) {
                     showConfigurationError("La clave de API de Google AI no está configurada. Por favor, sigue las instrucciones en el código para añadir tu clave de API de Google AI Studio.");
                     return;
                 }
-                try {
-                    const app = initializeApp(firebaseConfig);
-                    auth = getAuth(app);
-                    db = getFirestore(app);
-                    
-                    // Handle redirect result from social logins
-                    getRedirectResult(auth)
-                        .then((result) => {
-                            if (result) {
-                                showToast('¡Bienvenido/a!');
-                            }
-                        }).catch((error) => {
-                            console.error("Redirect login error:", error);
-                            showToast(getFirebaseAuthErrorMessage(error));
-                        });
-
-                    onAuthStateChanged(auth, updateUserUI);
-
-                } catch (error) {
-                    console.error("Firebase Initialization Error:", error);
-                    displayError("Error al iniciar la aplicación. Revisa la configuración de Firebase.");
-                }
-                
                 setupEventListeners();
+                updateUserUI(null); // Start as logged out
             }
 
             function showConfigurationError(message) {
@@ -577,11 +488,11 @@
                         const exampleData = exampleStories[card.id];
                         if (exampleData) {
                             document.getElementById('crear-cuento').scrollIntoView({ behavior: 'smooth' });
-                            handleStoryGeneration(null, exampleData, false); // Don't save examples
+                            handleStoryGeneration(null, exampleData);
                         }
                     });
                 });
-                storyForm.addEventListener('submit', (e) => handleStoryGeneration(e, null, true));
+                storyForm.addEventListener('submit', (e) => handleStoryGeneration(e));
                 suggestPlotBtn.addEventListener('click', handlePlotSuggestion);
                 petImageInput.addEventListener('change', handleImagePreview);
                 
@@ -593,168 +504,81 @@
                     showToast("¡Pedido recibido! (Esto es una simulación).");
                 });
                 
-                authButton.addEventListener('click', () => {
-                    const user = auth.currentUser;
-                    if (user && !user.isAnonymous) {
-                        userDropdown.classList.toggle('hidden');
-                    } else {
-                        authModal.classList.remove('hidden');
-                    }
-                });
+                authButton.addEventListener('click', () => authModal.classList.remove('hidden'));
                 closeAuthModalBtn.addEventListener('click', () => authModal.classList.add('hidden'));
-                googleLoginBtn.addEventListener('click', handleGoogleLogin);
-                facebookLoginBtn.addEventListener('click', handleFacebookLogin);
-                emailLoginBtn.addEventListener('click', handleEmailLogin);
-                emailRegisterBtn.addEventListener('click', handleEmailRegister);
+                authToggleLink.addEventListener('click', toggleAuthMode);
+                emailForm.addEventListener('submit', handleAuthFormSubmit);
                 logoutBtn.addEventListener('click', handleLogout);
             }
 
-            // --- Auth & Data Loading Functions ---
+            // --- Auth Functions ---
             function updateUserUI(user) {
-                if (user && !user.isAnonymous) {
-                    authButton.innerHTML = `<img src="${user.photoURL || `https://placehold.co/100x100/A0E8D5/333333?text=${user.displayName ? user.displayName.charAt(0).toUpperCase() : '?'}`}" class="w-10 h-10 rounded-full" alt="User Avatar">`;
-                    userDropdownName.textContent = user.displayName || 'Usuario';
-                    userDropdownEmail.textContent = user.email;
-                    greeting.textContent = `¡Hola, ${user.displayName ? user.displayName.split(' ')[0] : 'amigo'}!`;
+                currentUser = user;
+                if (user) {
+                    authButton.classList.add('hidden');
+                    userInfo.classList.remove('hidden');
+                    userInfo.classList.add('flex');
+                    userGreeting.textContent = `¡Hola, ${user.name}!`;
+                    greeting.textContent = `¡Hola, ${user.name}!`;
                     authModal.classList.add('hidden');
-                    loadUserStories(user.uid);
                 } else {
-                    authButton.innerHTML = 'Iniciar Sesión';
-                    userDropdown.classList.add('hidden');
+                    authButton.classList.remove('hidden');
+                    userInfo.classList.add('hidden');
+                    userInfo.classList.remove('flex');
                     greeting.textContent = "¡Hola!";
-                    clearUserStories();
-                     if (!user) { // If fully logged out, sign in anonymously
-                        signInAnonymously(auth).catch(error => console.error("Anonymous sign-in failed:", error));
-                    }
-                }
-            }
-            
-            async function handleGoogleLogin() {
-                const provider = new GoogleAuthProvider();
-                try {
-                    await signInWithRedirect(auth, provider);
-                } catch (error) {
-                    console.error("Google login error:", error);
-                    authErrorMessage.textContent = getFirebaseAuthErrorMessage(error);
                 }
             }
 
-            async function handleFacebookLogin() {
-                const provider = new FacebookAuthProvider();
-                try {
-                    await signInWithRedirect(auth, provider);
-                } catch (error) {
-                    console.error("Facebook login error:", error);
-                    authErrorMessage.textContent = getFirebaseAuthErrorMessage(error);
-                }
-            }
-
-            async function handleEmailLogin() {
-                const email = emailInput.value;
-                const password = passwordInput.value;
+            function toggleAuthMode(e) {
+                if(e) e.preventDefault();
+                isRegisterMode = !isRegisterMode;
                 authErrorMessage.textContent = '';
-                if (!email || !password) {
-                    authErrorMessage.textContent = 'Por favor, introduce email y contraseña.';
-                    return;
-                }
-                try {
-                    await signInWithEmailAndPassword(auth, email, password);
-                    showToast('¡Bienvenido/a de nuevo!');
-                } catch(error) {
-                    console.error("Email login error:", error);
-                    authErrorMessage.textContent = getFirebaseAuthErrorMessage(error);
+                if (isRegisterMode) {
+                    authTitle.textContent = 'Únete a la Aventura';
+                    nameInput.classList.remove('hidden');
+                    nameInput.required = true;
+                    authSubmitBtn.textContent = 'Registrarse';
+                    authPromptText.textContent = '¿Ya tienes una cuenta?';
+                    authToggleLink.textContent = 'Inicia Sesión';
+                } else {
+                    authTitle.textContent = 'Bienvenido/a de Nuevo';
+                    nameInput.classList.add('hidden');
+                    nameInput.required = false;
+                    authSubmitBtn.textContent = 'Iniciar Sesión';
+                    authPromptText.textContent = '¿No tienes una cuenta?';
+                    authToggleLink.textContent = 'Regístrate';
                 }
             }
             
-            async function handleEmailRegister() {
+            function handleAuthFormSubmit(e) {
+                e.preventDefault();
+                const name = nameInput.value;
                 const email = emailInput.value;
                 const password = passwordInput.value;
-                 authErrorMessage.textContent = '';
-                if (!email || !password) {
-                    authErrorMessage.textContent = 'Por favor, introduce email y contraseña.';
-                    return;
-                }
-                try {
-                    await createUserWithEmailAndPassword(auth, email, password);
-                    showToast('¡Registro completado! Bienvenido/a.');
-                } catch(error) {
-                    console.error("Email registration error:", error);
-                    authErrorMessage.textContent = getFirebaseAuthErrorMessage(error);
-                }
-            }
-            
-            async function handleLogout(e) {
-                e.preventDefault();
-                try {
-                    await signOut(auth);
-                    showToast('Has cerrado sesión.');
-                } catch (error) {
-                    console.error("Logout error:", error);
-                }
-            }
 
-            function getFirebaseAuthErrorMessage(error) {
-                switch (error.code) {
-                    case 'auth/invalid-email': return 'El formato del email no es válido.';
-                    case 'auth/user-not-found':
-                    case 'auth/wrong-password': return 'El email o la contraseña son incorrectos.';
-                    case 'auth/email-already-in-use': return 'Este email ya está registrado.';
-                    case 'auth/weak-password': return 'La contraseña debe tener al menos 6 caracteres.';
-                    case 'auth/account-exists-with-different-credential': return 'Ya existe una cuenta con este email. Prueba a iniciar sesión con otro método.';
-                    case 'auth/popup-closed-by-user': return 'Has cerrado la ventana de inicio de sesión.';
-                    case 'auth/operation-not-allowed': return 'Este método de inicio de sesión no está habilitado. Actívalo en tu consola de Firebase.';
-                    default: return 'Ha ocurrido un error. Inténtalo de nuevo.';
-                }
-            }
-            
-            function loadUserStories(userId) {
-                const storiesRef = collection(db, 'artifacts', appId, 'users', userId, 'stories');
-                const q = query(storiesRef);
-
-                if (unsubscribeFromStories) unsubscribeFromStories();
-
-                unsubscribeFromStories = onSnapshot(q, (querySnapshot) => {
-                    if (querySnapshot.empty) {
-                        savedStoriesGrid.innerHTML = '<p class="text-gray-500 col-span-full">Aún no has creado ningún cuento. ¡Anímate a crear el primero!</p>';
-                        savedStoriesSection.classList.remove('hidden');
+                if (isRegisterMode) {
+                    if (!name || !email || !password) {
+                        authErrorMessage.textContent = 'Por favor, rellena todos los campos.';
                         return;
                     }
-                    
-                    savedStoriesGrid.innerHTML = '';
-                    querySnapshot.forEach((doc) => {
-                        createStoryCard(doc.id, doc.data());
-                    });
-                    savedStoriesSection.classList.remove('hidden');
-                }, (error) => {
-                    console.error("Error loading stories:", error);
-                    showToast("No se pudieron cargar tus cuentos.");
-                });
-            }
-
-            function createStoryCard(storyId, storyData) {
-                const card = document.createElement('a');
-                card.href = '#crear-cuento';
-                card.className = "bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform hover:scale-105 transition-transform flex flex-col";
-                card.innerHTML = `
-                    <img src="${storyData.coverImage}" alt="Portada de ${storyData.title}" class="w-full h-48 object-cover" onerror="this.src='https://placehold.co/600x400/cccccc/333333?text=🐾'">
-                    <div class="p-6 flex-grow flex flex-col">
-                        <h3 class="font-brand text-2xl font-bold">${storyData.title}</h3>
-                    </div>`;
-                card.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    document.getElementById('crear-cuento').scrollIntoView({ behavior: 'smooth' });
-                    renderEbook(storyData.title, storyData.coverImage, storyData.pages);
-                });
-                savedStoriesGrid.appendChild(card);
-            }
-
-            function clearUserStories() {
-                if (unsubscribeFromStories) {
-                    unsubscribeFromStories();
-                    unsubscribeFromStories = null;
+                    // Simulate successful registration
+                    showToast(`¡Registro completado! Bienvenido/a, ${name}.`);
+                    updateUserUI({ name, email });
+                } else {
+                     if (!email || !password) {
+                        authErrorMessage.textContent = 'Por favor, introduce email y contraseña.';
+                        return;
+                    }
+                    // Simulate successful login
+                    showToast(`¡Bienvenido/a de nuevo!`);
+                    updateUserUI({ name: 'Usuario', email });
                 }
-                savedStoriesSection.classList.add('hidden');
-                savedStoriesGrid.innerHTML = '';
+            }
+            
+            function handleLogout(e) {
+                e.preventDefault();
+                updateUserUI(null);
+                showToast('Has cerrado sesión.');
             }
 
             // --- UI Functions ---
@@ -832,12 +656,11 @@
 
             // --- Core Application Logic ---
 
-            async function handleStoryGeneration(event, predefinedData = null, shouldSave = false) {
+            async function handleStoryGeneration(event, predefinedData = null) {
                 if (event) event.preventDefault();
                 
-                const user = auth.currentUser;
-                if (shouldSave && (!user || user.isAnonymous)) {
-                    showToast('Por favor, inicia sesión para crear y guardar un cuento.');
+                if (!currentUser) {
+                    showToast('Por favor, inicia sesión para crear un cuento.');
                     authModal.classList.remove('hidden');
                     return;
                 }
@@ -919,18 +742,6 @@
                     storyPagesData = pages;
                     renderEbook(story.titulo, coverImageData, pages);
 
-                    if (shouldSave && user) {
-                        const storyToSave = {
-                            title: story.titulo,
-                            coverImage: coverImageData,
-                            pages: pages,
-                            formData: storyData,
-                            createdAt: serverTimestamp()
-                        };
-                        await saveStoryToFirestore(user.uid, storyToSave);
-                        showToast('¡Tu cuento ha sido guardado!');
-                    }
-
                 } catch (error) {
                     console.error("Error generating story:", error);
                     displayError(error.message || "No se pudo generar el cuento. Inténtalo de nuevo.");
@@ -939,16 +750,6 @@
                 }
             }
             
-            async function saveStoryToFirestore(userId, storyData) {
-                try {
-                    const storiesColRef = collection(db, 'artifacts', appId, 'users', userId, 'stories');
-                    await addDoc(storiesColRef, storyData);
-                } catch (error) {
-                    console.error("Error saving story to Firestore:", error);
-                    showToast("Error al guardar tu cuento.");
-                }
-            }
-
             // --- API Call Functions ---
 
             async function analyzePetImage(imageBase64Data) {
