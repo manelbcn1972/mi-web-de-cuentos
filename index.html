@@ -148,6 +148,7 @@
                 <a href="#" class="text-gray-600 hover:text-pink-500">Inicio</a>
                 <a href="#como-funciona" class="text-gray-600 hover:text-pink-500">¿Cómo funciona?</a>
                 <a href="#crear-cuento" class="text-gray-600 hover:text-pink-500">Crear Cuento</a>
+                <a href="#mis-cuentos" class="text-gray-600 hover:text-pink-500">Mis Cuentos</a>
             </div>
             <div id="auth-container" class="relative">
                 <button id="auth-button" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-full hover:bg-blue-600 transition-colors">
@@ -337,6 +338,13 @@
             </div>
         </section>
         
+        <section id="mis-cuentos" class="mt-24 text-center hidden">
+            <h2 class="font-brand text-4xl font-bold text-gray-800">Mi Biblioteca de Cuentos</h2>
+            <p class="mt-2 text-gray-500">Aquí están todas las aventuras que has creado.</p>
+            <div id="saved-stories-grid" class="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Saved stories will be injected here -->
+            </div>
+        </section>
     </div>
     <footer class="bg-white mt-16 py-8">
         <div class="container mx-auto text-center text-gray-500">
@@ -350,7 +358,7 @@
             <button id="close-auth-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
             <h2 id="auth-title" class="font-brand text-3xl font-bold text-gray-800 mb-6 text-center">Únete a la Aventura</h2>
             <form id="email-form" class="space-y-4">
-                <input type="text" id="name-input" placeholder="Tu nombre" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 hidden">
+                <input type="text" id="name-input" placeholder="Tu nombre" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
                 <input type="email" id="email-input" placeholder="Correo electrónico" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
                 <input type="password" id="password-input" placeholder="Contraseña" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
                 <p id="auth-error-message" class="text-red-500 text-sm text-center h-4"></p>
@@ -425,6 +433,8 @@
             const cancelPrintBtn = document.getElementById('cancel-print-btn');
             const printForm = document.getElementById('print-form');
             const toast = document.getElementById('toast-notification');
+            const savedStoriesSection = document.getElementById('mis-cuentos');
+            const savedStoriesGrid = document.getElementById('saved-stories-grid');
             
             // Auth UI Elements
             const authModal = document.getElementById('auth-modal');
@@ -468,7 +478,7 @@
                     return;
                 }
                 setupEventListeners();
-                updateUserUI(null); // Start as logged out
+                checkSession();
             }
 
             function showConfigurationError(message) {
@@ -488,11 +498,11 @@
                         const exampleData = exampleStories[card.id];
                         if (exampleData) {
                             document.getElementById('crear-cuento').scrollIntoView({ behavior: 'smooth' });
-                            handleStoryGeneration(null, exampleData);
+                            handleStoryGeneration(null, exampleData, false);
                         }
                     });
                 });
-                storyForm.addEventListener('submit', (e) => handleStoryGeneration(e));
+                storyForm.addEventListener('submit', (e) => handleStoryGeneration(e, null, true));
                 suggestPlotBtn.addEventListener('click', handlePlotSuggestion);
                 petImageInput.addEventListener('change', handleImagePreview);
                 
@@ -505,17 +515,25 @@
                 });
                 
                 authButton.addEventListener('click', () => {
-    authModal.classList.remove('hidden');
-    isRegisterMode = true;
-    toggleAuthMode();
-});
-closeAuthModalBtn.addEventListener('click', () => authModal.classList.add('hidden'));
-authToggleLink.addEventListener('click', toggleAuthMode);
-emailForm.addEventListener('submit', handleAuthFormSubmit);
-logoutBtn.addEventListener('click', handleLogout);
+                    toggleAuthMode(null, true); // Open in register mode by default
+                    authModal.classList.remove('hidden');
+                });
+                closeAuthModalBtn.addEventListener('click', () => authModal.classList.add('hidden'));
+                authToggleLink.addEventListener('click', toggleAuthMode);
+                emailForm.addEventListener('submit', handleAuthFormSubmit);
+                logoutBtn.addEventListener('click', handleLogout);
             }
 
             // --- Auth Functions ---
+            function checkSession() {
+                const userSession = sessionStorage.getItem('petstories_user');
+                if (userSession) {
+                    updateUserUI(JSON.parse(userSession));
+                } else {
+                    updateUserUI(null);
+                }
+            }
+
             function updateUserUI(user) {
                 currentUser = user;
                 if (user) {
@@ -525,17 +543,19 @@ logoutBtn.addEventListener('click', handleLogout);
                     userGreeting.textContent = `¡Hola, ${user.name}!`;
                     greeting.textContent = `¡Hola, ${user.name}!`;
                     authModal.classList.add('hidden');
+                    loadUserStories();
                 } else {
                     authButton.classList.remove('hidden');
                     userInfo.classList.add('hidden');
                     userInfo.classList.remove('flex');
                     greeting.textContent = "¡Hola!";
+                    clearUserStories();
                 }
             }
 
-            function toggleAuthMode(e) {
+            function toggleAuthMode(e, forceRegister = false) {
                 if(e) e.preventDefault();
-                isRegisterMode = !isRegisterMode;
+                isRegisterMode = forceRegister ? true : !isRegisterMode;
                 authErrorMessage.textContent = '';
                 if (isRegisterMode) {
                     authTitle.textContent = 'Únete a la Aventura';
@@ -557,32 +577,84 @@ logoutBtn.addEventListener('click', handleLogout);
             function handleAuthFormSubmit(e) {
                 e.preventDefault();
                 const name = nameInput.value;
-                const email = emailInput.value;
+                const email = emailInput.value.toLowerCase();
                 const password = passwordInput.value;
+                let users = JSON.parse(localStorage.getItem('petstories_users')) || {};
 
                 if (isRegisterMode) {
                     if (!name || !email || !password) {
                         authErrorMessage.textContent = 'Por favor, rellena todos los campos.';
                         return;
                     }
-                    // Simulate successful registration
+                    if (users[email]) {
+                        authErrorMessage.textContent = 'Este email ya está registrado.';
+                        return;
+                    }
+                    users[email] = { name, password }; // Note: Storing password in plain text is not secure for real apps.
+                    localStorage.setItem('petstories_users', JSON.stringify(users));
+                    const newUser = { name, email };
+                    sessionStorage.setItem('petstories_user', JSON.stringify(newUser));
+                    updateUserUI(newUser);
                     showToast(`¡Registro completado! Bienvenido/a, ${name}.`);
-                    updateUserUI({ name, email });
                 } else {
                      if (!email || !password) {
                         authErrorMessage.textContent = 'Por favor, introduce email y contraseña.';
                         return;
                     }
-                    // Simulate successful login
-                    showToast(`¡Bienvenido/a de nuevo!`);
-                    updateUserUI({ name: 'Usuario', email });
+                    if (!users[email] || users[email].password !== password) {
+                        authErrorMessage.textContent = 'Email o contraseña incorrectos.';
+                        return;
+                    }
+                    const loggedInUser = { name: users[email].name, email };
+                    sessionStorage.setItem('petstories_user', JSON.stringify(loggedInUser));
+                    updateUserUI(loggedInUser);
+                    showToast(`¡Bienvenido/a de nuevo, ${users[email].name}!`);
                 }
             }
             
             function handleLogout(e) {
                 e.preventDefault();
+                sessionStorage.removeItem('petstories_user');
                 updateUserUI(null);
                 showToast('Has cerrado sesión.');
+            }
+
+            function loadUserStories() {
+                if (!currentUser) return;
+                const allStories = JSON.parse(localStorage.getItem('petstories_stories')) || {};
+                const userStories = allStories[currentUser.email] || [];
+                
+                if (userStories.length === 0) {
+                    savedStoriesGrid.innerHTML = '<p class="text-gray-500 col-span-full">Aún no has creado ningún cuento. ¡Anímate a crear el primero!</p>';
+                } else {
+                    savedStoriesGrid.innerHTML = '';
+                    userStories.forEach((storyData, index) => {
+                        createStoryCard(index, storyData);
+                    });
+                }
+                savedStoriesSection.classList.remove('hidden');
+            }
+
+            function createStoryCard(storyId, storyData) {
+                const card = document.createElement('a');
+                card.href = '#crear-cuento';
+                card.className = "bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform hover:scale-105 transition-transform flex flex-col";
+                card.innerHTML = `
+                    <img src="${storyData.coverImage}" alt="Portada de ${storyData.title}" class="w-full h-48 object-cover" onerror="this.src='https://placehold.co/600x400/cccccc/333333?text=🐾'">
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h3 class="font-brand text-2xl font-bold">${storyData.title}</h3>
+                    </div>`;
+                card.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.getElementById('crear-cuento').scrollIntoView({ behavior: 'smooth' });
+                    renderEbook(storyData.title, storyData.coverImage, storyData.pages);
+                });
+                savedStoriesGrid.appendChild(card);
+            }
+
+            function clearUserStories() {
+                savedStoriesSection.classList.add('hidden');
+                savedStoriesGrid.innerHTML = '';
             }
 
             // --- UI Functions ---
@@ -660,11 +732,11 @@ logoutBtn.addEventListener('click', handleLogout);
 
             // --- Core Application Logic ---
 
-            async function handleStoryGeneration(event, predefinedData = null) {
+            async function handleStoryGeneration(event, predefinedData = null, shouldSave = false) {
                 if (event) event.preventDefault();
                 
-                if (!currentUser) {
-                    showToast('Por favor, inicia sesión para crear un cuento.');
+                if (!currentUser && shouldSave) {
+                    showToast('Por favor, inicia sesión para crear y guardar un cuento.');
                     authModal.classList.remove('hidden');
                     return;
                 }
@@ -746,6 +818,18 @@ logoutBtn.addEventListener('click', handleLogout);
                     storyPagesData = pages;
                     renderEbook(story.titulo, coverImageData, pages);
 
+                    if (shouldSave && currentUser) {
+                        const storyToSave = {
+                            title: story.titulo,
+                            coverImage: coverImageData,
+                            pages: pages,
+                            formData: storyData,
+                            createdAt: new Date().toISOString()
+                        };
+                        saveStoryToLocalStorage(storyToSave);
+                        showToast('¡Tu cuento ha sido guardado!');
+                    }
+
                 } catch (error) {
                     console.error("Error generating story:", error);
                     displayError(error.message || "No se pudo generar el cuento. Inténtalo de nuevo.");
@@ -754,6 +838,17 @@ logoutBtn.addEventListener('click', handleLogout);
                 }
             }
             
+            function saveStoryToLocalStorage(storyData) {
+                if (!currentUser) return;
+                const allStories = JSON.parse(localStorage.getItem('petstories_stories')) || {};
+                if (!allStories[currentUser.email]) {
+                    allStories[currentUser.email] = [];
+                }
+                allStories[currentUser.email].push(storyData);
+                localStorage.setItem('petstories_stories', JSON.stringify(allStories));
+                loadUserStories();
+            }
+
             // --- API Call Functions ---
 
             async function analyzePetImage(imageBase64Data) {
