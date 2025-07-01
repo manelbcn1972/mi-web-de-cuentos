@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PetStories - Crea Cuentos Mágicos de tu Mascota</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Baloo+2:wght@700;800&display=swap"
-        rel="stylesheet">
-    <!-- PDF & Canvas Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi web de cuentos</title>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+  <!-- Tailwind para estilos -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <h1 class="text-2xl text-center mt-10 font-bold">¡Hola, tu web de cuentos con Firebase!</h1>
+  <div id="app-root"></div>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -439,64 +440,65 @@
             serverTimestamp
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- INICIO DEL CÓDIGO DE LA APLICACIÓN ---
-        document.addEventListener('DOMContentLoaded', () => {
-
-           // --- App Config (Provided by Environment or User) ---
-            // INSTRUCCIONES: Reemplaza el objeto 'userFirebaseConfig' con tu propia configuración de Firebase.
-            // Puedes obtenerla desde la consola de Firebase de tu proyecto:
-            // Project Settings > General > Your apps > SDK setup and configuration > Config
-            // IMPORTANTE: También debes habilitar los proveedores de inicio de sesión (Google, Facebook, Email/Password)
-            // en la sección de Authentication > Sign-in method de tu consola de Firebase.
-           // --- CONFIGURACIÓN FIREBASE ---
+          <script>
+   <script>
+    // --- CONFIGURACIÓN FIREBASE ---
     const firebaseConfig = {
       apiKey: "AIzaSyC9UIreovgnWHpwYT_idZSAvm0JlyPk6Ok",
       authDomain: "petstories-app.firebaseapp.com",
       projectId: "petstories-app",
       storageBucket: "petstories-app.appspot.com",
       messagingSenderId: "90799928498",
-      appId: "1:90799928498:web:d503295ddaec2822dd45ab",
+      appId: "1:90799928498:web:d503295ddaec2822dd45ab"
     };
-            
-    // (Opcional: permite override para pruebas o despliegue)
-    const finalFirebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : firebaseConfig;
- --- CONFIGURACIÓN GOOGLE AI ---
-const userGoogleAiApiKey = ""; // <--- Pega aquí tu API KEY de Google AI
 
-    // --- INICIALIZACIÓN ROBUSTA ---
-    let auth, db;
+    let app, auth, db;
 
-    async function initApp() {
-        if (!finalFirebaseConfig || !finalFirebaseConfig.projectId) {
-            showConfigurationError("Falta projectId o la config está mal.");
-            return;
-        }
-        console.log("Config que llega:", finalFirebaseConfig);
-        try {
-            const app = initializeApp(finalFirebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            onAuthStateChanged(auth, updateUserUI);
-            setupEventListeners();
-        } catch (error) {
-            console.error("Firebase Initialization Error:", error);
-            displayError("Error al iniciar la aplicación. Revisa la configuración de Firebase.");
-        }
-    }
-
-    // --- FUNCIONES AUXILIARES DE ERROR ---
     function showConfigurationError(message) {
-        const body = document.querySelector('body');
-        body.innerHTML = `<div class="h-screen w-screen flex items-center justify-center p-4 bg-gray-100">
-                <div class="text-center text-red-700 bg-red-100 p-8 rounded-lg shadow-2xl max-w-2xl">
-                    <h3 class="font-bold text-3xl text-red-800">Error de Configuración Crítico</h3>
-                    <p class="mt-4 text-gray-700">${message}</p>
-                </div>
-            </div>`;
+      document.body.innerHTML = `<div class='flex items-center justify-center min-h-screen p-4 bg-gray-100'><div class='text-center text-red-700 bg-red-100 p-8 rounded-lg shadow-2xl max-w-2xl'><h3 class='font-bold text-3xl text-red-800'>Error de Configuración Crítico</h3><p class='mt-4 text-gray-700'>${message}</p></div></div>`;
     }
-    function displayError(message) {
-        alert(message);
+
+    function initApp() {
+      console.log('Config que llega a Firebase:', firebaseConfig);
+      if (!firebaseConfig || !firebaseConfig.projectId) {
+        showConfigurationError('Falta projectId o la config está mal.');
+        return;
+      }
+      try {
+        app = firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+        db = firebase.firestore();
+        document.getElementById('app-root').innerHTML = `<div class='p-6 bg-white rounded-xl shadow mt-8 text-center'>✅ Firebase inicializado correctamente</div>`;
+        console.log('✅ Firebase inicializado correctamente');
+      } catch (error) {
+        console.error('Firebase Initialization Error:', error);
+        showConfigurationError('Error al iniciar la aplicación. Revisa la configuración de Firebase.');
+      }
     }
+
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+
+    function showConfigurationError(message) {
+      const body = document.querySelector('body');
+      body.innerHTML = `<div class="h-screen w-screen flex items-center justify-center p-4 bg-gray-100">
+        <div class="text-center text-red-700 bg-red-100 p-8 rounded-lg shadow-2xl max-w-2xl">
+          <h3 class="font-bold text-3xl text-red-800">Error de Configuración Crítico</h3>
+          <p class="mt-4 text-gray-700">${message}</p>
+        </div>
+      </div>`;
+    }
+
+    // Inicializa la app al cargar
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+
+  <!-- Aquí puedes poner la configuración de Google AI API, por ejemplo: -->
+  <script>
+    // Sustituye por tu API KEY cuando lo necesites
+    const userGoogleAiApiKey = "PON_AQUI_TU_GOOGLE_API_KEY";
+    // Puedes usar esta variable en tus llamadas IA
+  </script>
 
     // --- TU CÓDIGO NORMAL SIGUE AQUÍ... ---
     // (TODO: Pega aquí setupEventListeners, updateUserUI, etc)
