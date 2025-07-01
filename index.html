@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mi web de cuentos</title>
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
-  <!-- Tailwind para estilos -->
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 min-h-screen">
-  <h1 class="text-2xl text-center mt-10 font-bold">¡Hola, tu web de cuentos con Firebase!</h1>
-  <div id="app-root"></div>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetStories - Crea Cuentos Mágicos de tu Mascota</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Baloo+2:wght@700;800&display=swap"
+        rel="stylesheet">
+    <!-- PDF & Canvas Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -426,7 +425,8 @@
             signInAnonymously,
             GoogleAuthProvider,
             FacebookAuthProvider,
-            signInWithPopup,
+            signInWithRedirect,
+            getRedirectResult,
             createUserWithEmailAndPassword,
             signInWithEmailAndPassword,
             signOut
@@ -440,71 +440,30 @@
             serverTimestamp
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-          <script>
-   <script>
-    // --- CONFIGURACIÓN FIREBASE ---
-    const firebaseConfig = {
-      apiKey: "AIzaSyC9UIreovgnWHpwYT_idZSAvm0JlyPk6Ok",
-      authDomain: "petstories-app.firebaseapp.com",
-      projectId: "petstories-app",
-      storageBucket: "petstories-app.appspot.com",
-      messagingSenderId: "90799928498",
-      appId: "1:90799928498:web:d503295ddaec2822dd45ab"
-    };
+        // --- INICIO DEL CÓDIGO DE LA APLICACIÓN ---
+        document.addEventListener('DOMContentLoaded', () => {
 
-    let app, auth, db;
+            // --- App Config (Provided by User) ---
+            // INSTRUCCIONES: Reemplaza el objeto 'firebaseConfig' con tu propia configuración de Firebase.
+            // Puedes obtenerla desde la consola de Firebase de tu proyecto:
+            // Project Settings > General > Your apps > SDK setup and configuration > Config
+            // IMPORTANTE: También debes habilitar los proveedores de inicio de sesión (Google, Facebook, Email/Password)
+            // en la sección de Authentication > Sign-in method de tu consola de Firebase.
+             const firebaseConfig = {
+              apiKey: "AIzaSyC9UIreovgnWHpwYT_idZSAvm0JlyPk6Ok",
+              authDomain: "petstories-app.firebaseapp.com",
+              projectId: "petstories-app",
+        storageBucket: "petstories-app.appspot.com",
+              messagingSenderId: "90799928498",
+            appId: "1:90799928498:web:d503295ddaec2822dd45ab",
+            };
 
-    function showConfigurationError(message) {
-      document.body.innerHTML = `<div class='flex items-center justify-center min-h-screen p-4 bg-gray-100'><div class='text-center text-red-700 bg-red-100 p-8 rounded-lg shadow-2xl max-w-2xl'><h3 class='font-bold text-3xl text-red-800'>Error de Configuración Crítico</h3><p class='mt-4 text-gray-700'>${message}</p></div></div>`;
-    }
+            // INSTRUCCIONES: Reemplaza la cadena vacía con tu clave de API de Google AI Studio.
+            // Puedes obtenerla en https://aistudio.google.com/app/apikey
+            const googleAiApiKey = "AIzaSyBLsNvpfVDDxRSfDMo3LHOKkxYA2b-KFgA";
 
-    function initApp() {
-      console.log('Config que llega a Firebase:', firebaseConfig);
-      if (!firebaseConfig || !firebaseConfig.projectId) {
-        showConfigurationError('Falta projectId o la config está mal.');
-        return;
-      }
-      try {
-        app = firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth();
-        db = firebase.firestore();
-        document.getElementById('app-root').innerHTML = `<div class='p-6 bg-white rounded-xl shadow mt-8 text-center'>✅ Firebase inicializado correctamente</div>`;
-        console.log('✅ Firebase inicializado correctamente');
-      } catch (error) {
-        console.error('Firebase Initialization Error:', error);
-        showConfigurationError('Error al iniciar la aplicación. Revisa la configuración de Firebase.');
-      }
-    }
-
-    window.addEventListener('DOMContentLoaded', initApp);
-  </script>
-
-    function showConfigurationError(message) {
-      const body = document.querySelector('body');
-      body.innerHTML = `<div class="h-screen w-screen flex items-center justify-center p-4 bg-gray-100">
-        <div class="text-center text-red-700 bg-red-100 p-8 rounded-lg shadow-2xl max-w-2xl">
-          <h3 class="font-bold text-3xl text-red-800">Error de Configuración Crítico</h3>
-          <p class="mt-4 text-gray-700">${message}</p>
-        </div>
-      </div>`;
-    }
-
-    // Inicializa la app al cargar
-    window.addEventListener('DOMContentLoaded', initApp);
-  </script>
-
-  <!-- Aquí puedes poner la configuración de Google AI API, por ejemplo: -->
-  <script>
-    // Sustituye por tu API KEY cuando lo necesites
-    const userGoogleAiApiKey = "AIzaSyBLsNvpfVDDxRSfDMo3LHOKkxYA2b-KFgA";
-    // Puedes usar esta variable en tus llamadas IA
-  </script>
-
-    // --- TU CÓDIGO NORMAL SIGUE AQUÍ... ---
-    // (TODO: Pega aquí setupEventListeners, updateUserUI, etc)
-    // Si estaban antes del antiguo initializeApp, muévelos después de initApp.
-    // Si tienes variables globales, decláralas antes de initApp().
-
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            
             // --- DOM Elements ---
             const storyForm = document.getElementById('story-form');
             const generateBtn = document.getElementById('generate-btn');
@@ -567,7 +526,7 @@
             initApp();
 
             async function initApp() {
-                if (!finalFirebaseConfig || finalFirebaseConfig.apiKey.includes("REEMPLAZA")) {
+                if (!firebaseConfig || firebaseConfig.apiKey.includes("REEMPLAZA")) {
                     showConfigurationError("La configuración de Firebase no está completa. Por favor, sigue las instrucciones en el código para añadir tus credenciales de Firebase y poder usar la aplicación.");
                     return;
                 }
@@ -576,10 +535,21 @@
                     return;
                 }
                 try {
-                    const app = initializeApp(finalFirebaseConfig);
+                    const app = initializeApp(firebaseConfig);
                     auth = getAuth(app);
                     db = getFirestore(app);
                     
+                    // Handle redirect result from social logins
+                    getRedirectResult(auth)
+                        .then((result) => {
+                            if (result) {
+                                showToast('¡Bienvenido/a!');
+                            }
+                        }).catch((error) => {
+                            console.error("Redirect login error:", error);
+                            showToast(getFirebaseAuthErrorMessage(error));
+                        });
+
                     onAuthStateChanged(auth, updateUserUI);
 
                 } catch (error) {
@@ -662,8 +632,7 @@
             async function handleGoogleLogin() {
                 const provider = new GoogleAuthProvider();
                 try {
-                    await signInWithPopup(auth, provider);
-                    showToast('¡Bienvenido/a!');
+                    await signInWithRedirect(auth, provider);
                 } catch (error) {
                     console.error("Google login error:", error);
                     authErrorMessage.textContent = getFirebaseAuthErrorMessage(error);
@@ -673,8 +642,7 @@
             async function handleFacebookLogin() {
                 const provider = new FacebookAuthProvider();
                 try {
-                    await signInWithPopup(auth, provider);
-                    showToast('¡Bienvenido/a!');
+                    await signInWithRedirect(auth, provider);
                 } catch (error) {
                     console.error("Facebook login error:", error);
                     authErrorMessage.textContent = getFirebaseAuthErrorMessage(error);
