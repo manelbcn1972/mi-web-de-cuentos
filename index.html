@@ -504,11 +504,15 @@
                     showToast("¡Pedido recibido! (Esto es una simulación).");
                 });
                 
-                authButton.addEventListener('click', () => authModal.classList.remove('hidden'));
-                closeAuthModalBtn.addEventListener('click', () => authModal.classList.add('hidden'));
-                authToggleLink.addEventListener('click', toggleAuthMode);
-                emailForm.addEventListener('submit', handleAuthFormSubmit);
-                logoutBtn.addEventListener('click', handleLogout);
+                authButton.addEventListener('click', () => {
+    authModal.classList.remove('hidden');
+    isRegisterMode = true;
+    toggleAuthMode();
+});
+closeAuthModalBtn.addEventListener('click', () => authModal.classList.add('hidden'));
+authToggleLink.addEventListener('click', toggleAuthMode);
+emailForm.addEventListener('submit', handleAuthFormSubmit);
+logoutBtn.addEventListener('click', handleLogout);
             }
 
             // --- Auth Functions ---
