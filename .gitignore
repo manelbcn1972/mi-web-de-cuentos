@@ -1,0 +1,16 @@
+# Ignore Elixir build and package files
+.hex/
+.mix/
+.replit
+erl_crash.dump
+.elixir_ls/
+deps/
+_build/
+
+node_modules/
+# Editor directories and system files
+.DS_Store
+*~
+
+npm-debug.log*
+yarn-error.log*
