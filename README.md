@@ -66,12 +66,14 @@ dependencias externas.
 node server.js
 ```
 
-El servidor servirá la página web y expondrá dos rutas:
+El servidor servirá la página web y expondrá tres rutas:
 
 - `GET /api/stories?user=<email>`: devuelve los cuentos guardados para ese
   usuario.
 - `POST /api/stories`: guarda un cuento. El cuerpo debe contener `{ user,
   story }`.
+- `DELETE /api/stories?user=<email>`: elimina todos los cuentos de ese
+  usuario.
 
 Los datos se guardan en el archivo `stories.json`.
 
