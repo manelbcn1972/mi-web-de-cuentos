@@ -342,6 +342,7 @@
         <section id="mis-cuentos" class="mt-24 text-center hidden">
             <h2 class="font-brand text-4xl font-bold text-gray-800">Mi Biblioteca de Cuentos</h2>
             <p class="mt-2 text-gray-500">Aquí están todas las aventuras que has creado.</p>
+            <button id="clear-stories-btn" class="mt-4 bg-red-600 text-white font-bold py-2 px-4 rounded hover:bg-red-700 transition">🗑 Borrar cuentos guardados</button>
             <div id="saved-stories-grid" class="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- Saved stories will be injected here -->
             </div>
@@ -439,6 +440,7 @@
             const toast = document.getElementById('toast-notification');
             const savedStoriesSection = document.getElementById('mis-cuentos');
             const savedStoriesGrid = document.getElementById('saved-stories-grid');
+            const clearStoriesBtn = document.getElementById('clear-stories-btn');
             
             // Auth UI Elements
             const authModal = document.getElementById('auth-modal');
@@ -528,6 +530,7 @@
                 authToggleLink.addEventListener('click', toggleAuthMode);
                 emailForm.addEventListener('submit', handleAuthFormSubmit);
                 logoutBtn.addEventListener('click', handleLogout);
+                clearStoriesBtn.addEventListener('click', handleClearStories);
             }
 
             // --- Auth Functions ---
@@ -628,6 +631,17 @@
                 showToast('Has cerrado sesión.');
             }
 
+            function handleClearStories() {
+                if (confirm('¿Seguro que deseas eliminar todos tus cuentos guardados?')) {
+                    if (currentUser) {
+                        fetch(`/api/stories?user=${encodeURIComponent(currentUser.email)}`, { method: 'DELETE' }).catch(() => {});
+                    }
+                    localStorage.removeItem('petstories_stories');
+                    clearUserStories();
+                    showToast('Se han eliminado todos los cuentos guardados.');
+                }
+            }
+
             function initGoogleSignIn() {
                 if (!googleClientId || googleClientId.includes('REEMPLAZA')) return;
                 google.accounts.id.initialize({
@@ -650,18 +664,30 @@
                 }
             }
 
-            function loadUserStories() {
+            async function loadUserStories() {
                 if (!currentUser) return;
+                try {
+                    const res = await fetch(`/api/stories?user=${encodeURIComponent(currentUser.email)}`);
+                    if (res.ok) {
+                        const stories = await res.json();
+                        renderSavedStories(stories);
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Error loading stories from server', e);
+                }
+
                 const allStories = JSON.parse(localStorage.getItem('petstories_stories')) || {};
                 const userStories = allStories[currentUser.email] || [];
-                
+                renderSavedStories(userStories);
+            }
+
+            function renderSavedStories(userStories) {
                 if (userStories.length === 0) {
                     savedStoriesGrid.innerHTML = '<p class="text-gray-500 col-span-full">Aún no has creado ningún cuento. ¡Anímate a crear el primero!</p>';
                 } else {
                     savedStoriesGrid.innerHTML = '';
-                    userStories.forEach((storyData, index) => {
-                        createStoryCard(index, storyData);
-                    });
+                    userStories.forEach((storyData, index) => createStoryCard(index, storyData));
                 }
                 savedStoriesSection.classList.remove('hidden');
             }
@@ -857,7 +883,7 @@
                             formData: storyData,
                             createdAt: new Date().toISOString()
                         };
-                        saveStoryToLocalStorage(storyToSave);
+                        saveStory(storyToSave);
                         showToast('¡Tu cuento ha sido guardado!');
                     }
 
@@ -869,15 +895,36 @@
                 }
             }
             
-            function saveStoryToLocalStorage(storyData) {
+            function saveStoryLocally(storyData) {
                 if (!currentUser) return;
                 const allStories = JSON.parse(localStorage.getItem('petstories_stories')) || {};
                 if (!allStories[currentUser.email]) {
                     allStories[currentUser.email] = [];
                 }
                 allStories[currentUser.email].push(storyData);
-                localStorage.setItem('petstories_stories', JSON.stringify(allStories));
-                loadUserStories();
+                try {
+                    localStorage.setItem('petstories_stories', JSON.stringify(allStories));
+                } catch (e) {
+                    console.error('Error saving story to localStorage', e);
+                    showToast('No hay espacio para guardar más cuentos. Borra algunos o usa "Borrar cuentos guardados".');
+                }
+            }
+
+            async function saveStory(storyData) {
+                if (!currentUser) return;
+                try {
+                    const res = await fetch('/api/stories', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user: currentUser.email, story: storyData })
+                    });
+                    if (!res.ok) throw new Error('Server error');
+                    loadUserStories();
+                } catch (e) {
+                    console.error('Error saving story to server', e);
+                    saveStoryLocally(storyData);
+                    loadUserStories();
+                }
             }
 
             // --- API Call Functions ---

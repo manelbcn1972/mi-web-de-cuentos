@@ -33,6 +33,25 @@ Para activar el inicio de sesión con Google debes generar un `Client ID` en
 [Google Cloud Console](https://console.cloud.google.com/) y sustituir el valor
 de `googleClientId` en `index.html`.
 
+### Backend opcional
+
+Si quieres almacenar los cuentos en el servidor en lugar de usar
+`localStorage`, puedes ejecutar el pequeño backend incluido. No requiere
+dependencias externas.
+
+```bash
+node server.js
+```
+
+El servidor servirá la página web y expondrá dos rutas:
+
+- `GET /api/stories?user=<email>`: devuelve los cuentos guardados para ese
+  usuario.
+- `POST /api/stories`: guarda un cuento. El cuerpo debe contener `{ user,
+  story }`.
+
+Los datos se guardan en el archivo `stories.json`.
+
 ## Contribuir
 
 ¡Las contribuciones son bienvenidas! Por favor crea un issue antes de enviar un pull request.
