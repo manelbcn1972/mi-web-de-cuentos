@@ -138,6 +138,7 @@
             transform: translate(-50%, -10px);
         }
     </style>
+    <script src="config.js"></script>
 </head>
 
 <body class="bg-gray-50 text-gray-800">
@@ -413,8 +414,8 @@
             // INSTRUCCIONES: Reemplaza las cadenas de abajo con tus claves.
             // Consigue tu API Key en https://aistudio.google.com/app/apikey
             // y tu Client ID de Google en https://console.cloud.google.com/
-            const googleAiApiKey = "AIzaSyBLsNvpfVDDxRSfDMo3LHOKkxYA2b-KFgA";
-            const googleClientId = "90799928498-epmcc1ufu2bsss7p3j9ni0tpavkrd8dp.apps.googleusercontent.com";
+            const googleAiApiKey = window.googleAiApiKey || "YOUR_GOOGLE_AI_API_KEY";
+            const googleClientId = window.googleClientId || "YOUR_GOOGLE_CLIENT_ID";
             
             // --- DOM Elements ---
             const storyForm = document.getElementById('story-form');

@@ -1,0 +1,5 @@
+# Ignore configuration file with sensitive keys
+config.js
+
+# Ignore Node modules if ever installed
+node_modules/
