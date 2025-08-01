@@ -10,7 +10,7 @@ erl_crash.dump
 deps/
 _build/
 
-# Node modules
+# Node modules (if ever installed)
 node_modules/
 
 # Editor directories and system files
