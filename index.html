@@ -1196,7 +1196,7 @@
                 downloadBtn.innerHTML = `<span class="loader-small"></span>Creando PDF...`;
 
                 const { jsPDF } = window.jspdf;
-                const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+                const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
 
                 try {
                     // --- Cover Page ---
@@ -1234,8 +1234,8 @@
                         const page = storyPagesData[i];
                         const pageXMargin = 40;
                         const pageYMargin = 40;
-                        const imageWidth = doc.internal.pageSize.width / 2 - pageXMargin * 1.5;
-                        const imageHeight = doc.internal.pageSize.height - pageYMargin * 2;
+                        const imageWidth = doc.internal.pageSize.width - pageXMargin * 2;
+                        const imageHeight = doc.internal.pageSize.height * 0.45;
                         
                         // Add Image
                         if (page.imageUrl) {
@@ -1259,13 +1259,14 @@
                         }
 
                         // Add Text
-                        doc.setFont('Helvetica', 'normal');
-                        doc.setFontSize(12);
+                        doc.setFont('Times', 'normal');
+                        doc.setFontSize(14);
                         doc.setTextColor(0, 0, 0);
-                        const textX = doc.internal.pageSize.width / 2 + pageXMargin / 2;
-                        const textWidth = doc.internal.pageSize.width / 2 - pageXMargin * 1.5;
+                        const textX = pageXMargin;
+                        const textWidth = doc.internal.pageSize.width - pageXMargin * 2;
+                        const textY = pageYMargin + imageHeight + 20;
                         const textLines = doc.splitTextToSize(page.text, textWidth);
-                        doc.text(textLines, textX, pageYMargin + 20);
+                        doc.text(textLines, textX, textY);
                     }
 
                     // --- Back Cover ---
