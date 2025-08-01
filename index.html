@@ -1,30 +1,166 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi web de cuentos</title>
-    <script>
-        function eliminarCuento(element) {
-            if (confirm('¿Estás seguro de que quieres eliminar este cuento?')) {
-                const cuento = element.parentElement;
-                cuento.remove();
-            }
-        }
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi web de cuentos</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    #login, #register { margin-bottom: 2em; }
+    .cuento { border: 1px solid #ccc; padding: 1em; margin: 1em 0; border-radius: 6px; }
+    .actions { margin-top: 1em; }
+    button { margin-right: 1em; }
+  </style>
 </head>
 <body>
-    <h1>Mis cuentos</h1>
-    <section id="mis-cuentos">
-        <div class="cuento">
-            <p>Cuento 1</p>
-            <button onclick="eliminarCuento(this)">Eliminar</button>
-        </div>
-        <div class="cuento">
-            <p>Cuento 2</p>
-            <button onclick="eliminarCuento(this)">Eliminar</button>
-        </div>
-        <!-- Más cuentos aquí -->
-    </section>
+  <h1>Mi web de cuentos</h1>
+
+  <div id="auth-section">
+    <div id="login">
+      <h2>Iniciar sesión</h2>
+      <input type="text" id="login-user" placeholder="Usuario">
+      <input type="password" id="login-pass" placeholder="Contraseña">
+      <button onclick="login()">Entrar</button>
+    </div>
+    <div id="register">
+      <h2>Registrar usuario</h2>
+      <input type="text" id="register-user" placeholder="Usuario">
+      <input type="password" id="register-pass" placeholder="Contraseña">
+      <button onclick="register()">Registrar</button>
+    </div>
+  </div>
+
+  <div id="app-section" style="display:none;">
+    <div>
+      <span id="welcome"></span>
+      <button onclick="logout()">Cerrar sesión</button>
+    </div>
+    <h2>Mis cuentos</h2>
+    <section id="mis-cuentos"></section>
+    <h3>Añadir nuevo cuento</h3>
+    <input type="text" id="nuevo-cuento" placeholder="Título del cuento">
+    <button onclick="addCuento()">Añadir</button>
+  </div>
+
+  <script>
+    // --- UTILIDADES LOCALSTORAGE ---
+    function getUsers() {
+      return JSON.parse(localStorage.getItem('users') || '{}');
+    }
+    function setUsers(users) {
+      localStorage.setItem('users', JSON.stringify(users));
+    }
+    function getCurrentUser() {
+      return localStorage.getItem('currentUser');
+    }
+    function setCurrentUser(user) {
+      localStorage.setItem('currentUser', user);
+    }
+    function getCuentos(user) {
+      return JSON.parse(localStorage.getItem('cuentos_' + user) || '[]');
+    }
+    function setCuentos(user, cuentos) {
+      localStorage.setItem('cuentos_' + user, JSON.stringify(cuentos));
+    }
+
+    // --- AUTENTICACIÓN ---
+    function login() {
+      const user = document.getElementById('login-user').value.trim();
+      const pass = document.getElementById('login-pass').value;
+      const users = getUsers();
+      if (users[user] && users[user] === pass) {
+        setCurrentUser(user);
+        showApp();
+      } else {
+        alert('Usuario o contraseña incorrectos');
+      }
+    }
+    function register() {
+      const user = document.getElementById('register-user').value.trim();
+      const pass = document.getElementById('register-pass').value;
+      const users = getUsers();
+      if (!user || !pass) {
+        alert('Debes rellenar ambos campos');
+        return;
+      }
+      if (users[user]) {
+        alert('Ese usuario ya existe');
+        return;
+      }
+      users[user] = pass;
+      setUsers(users);
+      setCuentos(user, []); // Iniciar biblioteca vacía
+      alert('Usuario registrado, ahora inicia sesión');
+    }
+    function logout() {
+      localStorage.removeItem('currentUser');
+      showAuth();
+    }
+
+    // --- GESTIÓN DE CUENTOS ---
+    function renderCuentos() {
+      const user = getCurrentUser();
+      const cuentos = getCuentos(user);
+      const cont = document.getElementById('mis-cuentos');
+      cont.innerHTML = '';
+      if (!cuentos.length) {
+        cont.innerHTML = '<p>No tienes cuentos aún.</p>';
+        return;
+      }
+      cuentos.forEach((titulo, idx) => {
+        const div = document.createElement('div');
+        div.className = 'cuento';
+        div.innerHTML = `
+          <p>${titulo}</p>
+          <div class="actions">
+            <button onclick="eliminarCuento(${idx})">Eliminar</button>
+          </div>
+        `;
+        cont.appendChild(div);
+      });
+    }
+    function addCuento() {
+      const input = document.getElementById('nuevo-cuento');
+      const titulo = input.value.trim();
+      if (!titulo) {
+        alert('Introduce un título');
+        return;
+      }
+      const user = getCurrentUser();
+      const cuentos = getCuentos(user);
+      cuentos.push(titulo);
+      setCuentos(user, cuentos);
+      input.value = '';
+      renderCuentos();
+    }
+    function eliminarCuento(idx) {
+      if (!confirm('¿Eliminar este cuento?')) return;
+      const user = getCurrentUser();
+      let cuentos = getCuentos(user);
+      cuentos.splice(idx, 1);
+      setCuentos(user, cuentos);
+      renderCuentos();
+    }
+
+    // --- UI ---
+    function showAuth() {
+      document.getElementById('auth-section').style.display = '';
+      document.getElementById('app-section').style.display = 'none';
+      document.getElementById('login-user').value = '';
+      document.getElementById('login-pass').value = '';
+    }
+    function showApp() {
+      const user = getCurrentUser();
+      if (!user) return showAuth();
+      document.getElementById('auth-section').style.display = 'none';
+      document.getElementById('app-section').style.display = '';
+      document.getElementById('welcome').textContent = `Bienvenido/a, ${user}`;
+      renderCuentos();
+    }
+
+    // --- INICIO ---
+    if (getCurrentUser()) showApp();
+    else showAuth();
+  </script>
 </body>
 </html>
