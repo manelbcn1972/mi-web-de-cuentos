@@ -24,11 +24,14 @@ Una aplicación web que genera cuentos ilustrados personalizados para mascotas u
 - Tailwind CSS
 - jsPDF para generación de PDFs
 - html2canvas para capturas
-- Firebase (opcional para autenticación)
+- Google Identity Services para inicio de sesión con Google
 
 ## Instalación
 
 Solo necesitas abrir el archivo `index.html` en cualquier navegador moderno.
+Para activar el inicio de sesión con Google debes generar un `Client ID` en
+[Google Cloud Console](https://console.cloud.google.com/) y sustituir el valor
+de `googleClientId` en `index.html`.
 
 ## Contribuir
 

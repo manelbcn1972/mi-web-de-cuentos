@@ -12,6 +12,7 @@
     <!-- PDF & Canvas Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <style>
         body {
@@ -361,6 +362,7 @@
                 <input type="text" id="name-input" placeholder="Tu nombre" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
                 <input type="email" id="email-input" placeholder="Correo electrónico" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
                 <input type="password" id="password-input" placeholder="Contraseña" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
+                <div id="google-signin-button" class="flex justify-center mb-2"></div>
                 <p id="auth-error-message" class="text-red-500 text-sm text-center h-4"></p>
                 <button type="submit" id="auth-submit-btn" class="w-full bg-pink-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-pink-600 transition-colors">Registrarse</button>
                 <p class="text-center text-sm text-gray-500">
@@ -407,9 +409,11 @@
         document.addEventListener('DOMContentLoaded', () => {
 
             // --- App Config (Provided by User) ---
-            // INSTRUCCIONES: Reemplaza la cadena vacía con tu clave de API de Google AI Studio.
-            // Puedes obtenerla en https://aistudio.google.com/app/apikey
+            // INSTRUCCIONES: Reemplaza las cadenas de abajo con tus claves.
+            // Consigue tu API Key en https://aistudio.google.com/app/apikey
+            // y tu Client ID de Google en https://console.cloud.google.com/
             const googleAiApiKey = "AIzaSyBLsNvpfVDDxRSfDMo3LHOKkxYA2b-KFgA";
+            const googleClientId = "REEMPLAZA_CON_TU_CLIENT_ID";
             
             // --- DOM Elements ---
             const storyForm = document.getElementById('story-form');
@@ -452,6 +456,7 @@
             const userInfo = document.getElementById('user-info');
             const userGreeting = document.getElementById('user-greeting');
             const logoutBtn = document.getElementById('logout-btn');
+            const googleSignInButton = document.getElementById('google-signin-button');
 
 
             // --- App State ---
@@ -478,6 +483,7 @@
                     return;
                 }
                 setupEventListeners();
+                initGoogleSignIn();
                 checkSession();
             }
 
@@ -616,7 +622,32 @@
                 e.preventDefault();
                 sessionStorage.removeItem('petstories_user');
                 updateUserUI(null);
+                if (window.google && google.accounts.id) {
+                    google.accounts.id.disableAutoSelect();
+                }
                 showToast('Has cerrado sesión.');
+            }
+
+            function initGoogleSignIn() {
+                if (!googleClientId || googleClientId.includes('REEMPLAZA')) return;
+                google.accounts.id.initialize({
+                    client_id: googleClientId,
+                    callback: handleGoogleCredentialResponse
+                });
+                google.accounts.id.renderButton(googleSignInButton, { theme: 'outline', size: 'large', width: 250 });
+            }
+
+            function handleGoogleCredentialResponse(response) {
+                try {
+                    const payload = JSON.parse(atob(response.credential.split('.')[1]));
+                    const user = { name: payload.name, email: payload.email, google: true };
+                    sessionStorage.setItem('petstories_user', JSON.stringify(user));
+                    updateUserUI(user);
+                    showToast(`¡Bienvenido/a, ${payload.name}!`);
+                } catch (e) {
+                    console.error('Error processing Google credential', e);
+                    authErrorMessage.textContent = 'No se pudo iniciar sesión con Google.';
+                }
             }
 
             function loadUserStories() {
