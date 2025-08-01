@@ -1,3 +1,6 @@
+# Ignore configuration file with sensitive keys
+config.js
+
 # Ignore Elixir build and package files
 .hex/
 .mix/
@@ -7,7 +10,9 @@ erl_crash.dump
 deps/
 _build/
 
+# Node modules
 node_modules/
+
 # Editor directories and system files
 .DS_Store
 *~

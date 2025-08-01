@@ -138,6 +138,7 @@
             transform: translate(-50%, -10px);
         }
     </style>
+    <script src="config.js"></script>
 </head>
 
 <body class="bg-gray-50 text-gray-800">
@@ -413,8 +414,8 @@
             // INSTRUCCIONES: Reemplaza las cadenas de abajo con tus claves.
             // Consigue tu API Key en https://aistudio.google.com/app/apikey
             // y tu Client ID de Google en https://console.cloud.google.com/
-            const googleAiApiKey = "AIzaSyBLsNvpfVDDxRSfDMo3LHOKkxYA2b-KFgA";
-            const googleClientId = "90799928498-epmcc1ufu2bsss7p3j9ni0tpavkrd8dp.apps.googleusercontent.com";
+            const googleAiApiKey = window.googleAiApiKey || "YOUR_GOOGLE_AI_API_KEY";
+            const googleClientId = window.googleClientId || "YOUR_GOOGLE_CLIENT_ID";
             
             // --- DOM Elements ---
             const storyForm = document.getElementById('story-form');
@@ -1075,12 +1076,13 @@
 
                 // Content Pages
                 pagesData.forEach((page, index) => {
+                    const sanitizedText = escapeHtml(page.text);
                     bookHtml += `<div id="page-${index + 1}" class="page grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg border">
                         <div class="flex items-center justify-center bg-gray-100 rounded-md overflow-hidden border">
                            <img src="${page.imageUrl}" alt="Ilustración para el cuento" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x400/e0e7ff/3730a3?text=🎨'">
                         </div>
                         <div class="flex items-center p-4 md:p-6 bg-gray-50 rounded-md border">
-                            <p class="text-gray-700 leading-relaxed text-base md:text-lg">${page.text}</p>
+                            <p class="text-gray-700 leading-relaxed text-base md:text-lg">${sanitizedText}</p>
                         </div>
                     </div>`;
                 });
@@ -1290,6 +1292,12 @@
             }
 
             // --- Utility Functions ---
+            function escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
             function readFileAsBase64(file) {
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();

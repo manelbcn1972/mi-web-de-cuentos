@@ -78,8 +78,10 @@ const server = http.createServer((req, res) => {
 
   // Static assets (css, js, images)
   if (req.method === 'GET') {
-    const filePath = path.join(__dirname, req.url);
-    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    const baseDir = path.resolve(__dirname);
+    const urlPath = new URL(req.url, `http://${req.headers.host}`).pathname;
+    const filePath = path.normalize(path.join(baseDir, urlPath));
+    if (filePath.startsWith(baseDir) && fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
       const ext = path.extname(filePath).toLowerCase();
       const contentTypeMap = {
         '.js': 'text/javascript',
