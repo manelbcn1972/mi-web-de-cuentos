@@ -3,147 +3,38 @@
 <script src="config.js"></script>
 <script src="hugging-face-config.js"></script>
 <script src="image-generator.js"></script>
+<script src="auth-manager.js"></script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PetStories - Crea Cuentos Mágicos de tu Mascota</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Baloo+2:wght@700;800&display=swap"
-        rel="stylesheet">
-    <!-- PDF & Canvas Libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            scroll-behavior: smooth;
-        }
-
-        .font-brand {
-            font-family: 'Baloo 2', cursive;
-        }
-
-        .hero-bg {
-            background-image: linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 50%), url('https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=2874&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8ZW58MHx8fHx8fA%3D%3D');
-            background-size: cover;
-            background-position: center 75%;
-        }
-
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-
-        .loader-small {
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top: 3px solid #fff;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            vertical-align: middle;
-            margin-right: 8px;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        #flipbook-modal {
-            background-color: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px);
-        }
-
-        .flipbook {
-            width: 90vw;
-            height: 60vw;
-            max-width: 1200px;
-            max-height: 800px;
-            perspective: 2500px;
-        }
-        
-        .flipbook .fb-page {
-            position: absolute;
-            width: 50%;
-            height: 100%;
-            top: 0;
-            right: 0;
-            transform-origin: left;
-            transition: transform 1s ease-in-out;
-            transform-style: preserve-3d;
-            cursor: pointer;
-        }
-
-        .flipbook .fb-page .fb-front,
-        .flipbook .fb-page .fb-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            background-color: white;
-        }
-
-        .flipbook .fb-page .fb-back {
-            transform: rotateY(180deg);
-        }
-
-        .flipbook .fb-page.flipped {
-            transform: rotateY(-180deg);
-        }
-        
-        .page {
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-            position: absolute;
-            top: 0;
-            left: 0;
-            display: none;
-        }
-
-        .page.active {
-            display: grid;
-        }
-        
-        #toast-notification {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #2d3748;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 9999px;
-            z-index: 100;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
-        }
-        #toast-notification.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translate(-50%, -10px);
-        }
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .font-brand { font-family: 'Baloo 2', cursive; }
+        .hero-bg { background-image: linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 50%), url('https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=2874&auto=format&fit=crop'); background-size: cover; background-position: center 75%; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        .loader-small { border: 3px solid rgba(255, 255, 255, 0.3); border-top: 3px solid #fff; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #flipbook-modal { background-color: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); }
+        .flipbook { width: 90vw; height: 60vw; max-width: 1200px; max-height: 800px; perspective: 2500px; }
+        .flipbook .fb-page { position: absolute; width: 50%; height: 100%; top: 0; right: 0; transform-origin: left; transition: transform 1s ease-in-out; transform-style: preserve-3d; cursor: pointer; }
+        .flipbook .fb-page .fb-front, .flipbook .fb-page .fb-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background-color: white; }
+        .flipbook .fb-page .fb-back { transform: rotateY(180deg); }
+        .flipbook .fb-page.flipped { transform: rotateY(-180deg); }
+        .page { width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; position: absolute; top: 0; left: 0; display: none; }
+        .page.active { display: grid; }
+        #toast-notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #2d3748; color: white; padding: 12px 24px; border-radius: 9999px; z-index: 100; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s, transform 0.3s; }
+        #toast-notification.show { opacity: 1; visibility: visible; transform: translate(-50%, -10px); }
     </style>
 </head>
 
 <body class="bg-gray-50 text-gray-800">
-
     <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div class="container mx-auto px-6 py-3 flex justify-between items-center">
             <div class="font-brand text-2xl font-bold text-pink-500"><a href="#">🐾 PetStories</a></div>
@@ -154,36 +45,26 @@
                 <a href="#mis-cuentos" class="text-gray-600 hover:text-pink-500">Mis Cuentos</a>
             </div>
             <div id="auth-container" class="relative">
-                <button id="auth-button" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-full hover:bg-blue-600 transition-colors">
-                    Iniciar Sesión
-                </button>
+                <button id="auth-button" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-full hover:bg-blue-600 transition-colors">Iniciar Sesión</button>
                 <div id="user-info" class="hidden items-center gap-x-4">
                     <span id="user-greeting" class="font-semibold text-gray-700"></span>
-                    <button id="logout-btn" class="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-full hover:bg-gray-300 transition-colors">
-                        Cerrar Sesión
-                    </button>
+                    <button id="logout-btn" class="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-full hover:bg-gray-300 transition-colors">Cerrar Sesión</button>
                 </div>
             </div>
         </div>
     </nav>
+
     <header class="hero-bg">
         <div class="container mx-auto px-6 py-24 md:py-32 text-center">
-            <h1 class="font-brand text-5xl md:text-7xl font-extrabold text-gray-800"><span
-                    id="greeting">¡Hola!</span><br class="hidden md:block" />Crea Cuentos Mágicos de tu <span
-                    class="text-pink-500">Mascota</span></h1>
-            <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Transforma a tu peludo amigo en el héroe de
-                aventuras increíbles. Nuestra IA crea historias de 8 páginas ilustradas que harán sonreír a toda la
-                familia.</p>
+            <h1 class="font-brand text-5xl md:text-7xl font-extrabold text-gray-800"><span id="greeting">¡Hola!</span><br class="hidden md:block" />Crea Cuentos Mágicos de tu <span class="text-pink-500">Mascota</span></h1>
+            <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Transforma a tu peludo amigo en el héroe de aventuras increíbles. Nuestra IA crea historias de 8 páginas ilustradas que harán sonreír a toda la familia.</p>
             <div class="mt-8 flex justify-center space-x-4">
-                <a href="#crear-cuento"
-                    class="bg-pink-500 text-white font-bold py-3 px-8 rounded-full hover:bg-pink-600 transition-transform transform hover:scale-105 shadow-lg">✨
-                    Crear Mi Cuento</a>
-                <a href="#ejemplos"
-                    class="bg-white text-gray-700 font-bold py-3 px-8 rounded-full hover:bg-gray-100 transition-transform transform hover:scale-105 shadow-lg border">📖
-                    Ver Ejemplos</a>
+                <a href="#crear-cuento" class="bg-pink-500 text-white font-bold py-3 px-8 rounded-full hover:bg-pink-600 transition-transform transform hover:scale-105 shadow-lg">✨ Crear Mi Cuento</a>
+                <a href="#ejemplos" class="bg-white text-gray-700 font-bold py-3 px-8 rounded-full hover:bg-gray-100 transition-transform transform hover:scale-105 shadow-lg border">📖 Ver Ejemplos</a>
             </div>
         </div>
     </header>
+
     <div class="container mx-auto px-6 py-16">
         <section id="como-funciona" class="text-center mb-24">
             <h2 class="font-brand text-4xl font-bold text-gray-800">¿Cómo Funciona?</h2>
@@ -192,23 +73,21 @@
                 <div class="bg-white p-8 rounded-2xl shadow-lg flex flex-col">
                     <div class="text-pink-500 text-5xl">1.</div>
                     <h3 class="font-brand text-2xl font-bold mt-4">Describe la Aventura</h3>
-                    <p class="mt-2 text-gray-500">Sube una foto de tu mascota o descríbela. Luego, elige un lugar, una
-                        trama y un estilo visual para su historia.</p>
+                    <p class="mt-2 text-gray-500">Sube una foto de tu mascota o descríbela. Luego, elige un lugar, una trama y un estilo visual para su historia.</p>
                 </div>
                 <div class="bg-white p-8 rounded-2xl shadow-lg flex flex-col">
                     <div class="text-pink-500 text-5xl">2.</div>
                     <h3 class="font-brand text-2xl font-bold mt-4">Magia de la IA</h3>
-                    <p class="mt-2 text-gray-500">Nuestra Inteligencia Artificial escribirá un cuento de 8 páginas y
-                        creará ilustraciones mágicas para cada una.</p>
+                    <p class="mt-2 text-gray-500">Nuestra Inteligencia Artificial escribirá un cuento de 8 páginas y creará ilustraciones mágicas para cada una.</p>
                 </div>
                 <div class="bg-white p-8 rounded-2xl shadow-lg flex flex-col">
                     <div class="text-pink-500 text-5xl">3.</div>
                     <h3 class="font-brand text-2xl font-bold mt-4">Lee y Descarga</h3>
-                    <p class="mt-2 text-gray-500">Disfruta de tu cuento personalizado en formato libro digital, y
-                        descárgalo como un PDF para guardarlo siempre.</p>
+                    <p class="mt-2 text-gray-500">Disfruta de tu cuento personalizado en formato libro digital, y descárgalo como un PDF para guardarlo siempre.</p>
                 </div>
             </div>
         </section>
+
         <section id="crear-cuento" class="bg-white p-8 md:p-12 rounded-3xl shadow-2xl">
             <header class="text-center mb-12">
                 <h2 class="font-brand text-5xl font-extrabold text-gray-800">Generador de Cuentos</h2>
@@ -217,82 +96,44 @@
             <main class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
                 <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
                     <form id="story-form" class="space-y-4">
-                        <div><label for="pet_image" class="block text-sm font-medium text-gray-600 mb-1">Sube una foto
-                                de tu mascota (opcional):</label><input type="file" id="pet_image" name="pet_image"
-                                accept="image/*"
-                                class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100">
-                            <div class="mt-2 text-center"><img id="image_preview"
-                                    class="hidden max-h-40 mx-auto rounded-lg shadow-sm"
-                                    alt="Vista previa de la mascota"></div>
+                        <div><label for="pet_image" class="block text-sm font-medium text-gray-600 mb-1">Sube una foto de tu mascota (opcional):</label><input type="file" id="pet_image" name="pet_image" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100">
+                            <div class="mt-2 text-center"><img id="image_preview" class="hidden max-h-40 mx-auto rounded-lg shadow-sm" alt="Vista previa de la mascota"></div>
                         </div>
-                        <div id="character_desc_group"><label for="character_desc"
-                                class="block text-sm font-medium text-gray-600 mb-1">O describe a tu
-                                personaje:</label><textarea id="character_desc" name="character_desc" rows="3"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
-                                placeholder="Ej: Un conejo blanco y bajito con orejas largas..." required></textarea>
+                        <div id="character_desc_group"><label for="character_desc" class="block text-sm font-medium text-gray-600 mb-1">O describe a tu personaje:</label><textarea id="character_desc" name="character_desc" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500" placeholder="Ej: Un conejo blanco y bajito con orejas largas..." required></textarea>
                         </div>
-                        <div><label for="character" class="block text-sm font-medium text-gray-600 mb-1">Nombre de tu
-                                mascota / personaje:</label><input type="text" id="character" name="character"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
-                                placeholder="Ej: El conejo Tito" required></div>
-                        <div><label for="setting" class="block text-sm font-medium text-gray-600 mb-1">Lugar o
-                                mundo:</label><input type="text" id="setting" name="setting"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
-                                placeholder="Ej: Un bosque de caramelos" required></div>
+                        <div><label for="character" class="block text-sm font-medium text-gray-600 mb-1">Nombre de tu mascota / personaje:</label><input type="text" id="character" name="character" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500" placeholder="Ej: El conejo Tito" required></div>
+                        <div><label for="setting" class="block text-sm font-medium text-gray-600 mb-1">Lugar o mundo:</label><input type="text" id="setting" name="setting" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500" placeholder="Ej: Un bosque de caramelos" required></div>
                         <div>
-                            <div class="flex justify-between items-center mb-1"><label for="plot"
-                                    class="block text-sm font-medium text-gray-600">Trama o problema:</label><button
-                                    type="button" id="suggest-plot-btn"
-                                    class="text-sm bg-purple-100 text-purple-700 hover:bg-purple-200 font-semibold py-1 px-3 rounded-full">✨
-                                    Sugerir Trama</button></div><textarea id="plot" name="plot" rows="3"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
-                                placeholder="Ej: Ha perdido su zanahoria cohete..." required></textarea>
-                            <div id="plot-suggestions" class="mt-2 space-y-2"></div>
+                            <div class="flex justify-between items-center mb-1"><label for="plot" class="block text-sm font-medium text-gray-600">Trama o problema:</label><button type="button" id="suggest-plot-btn" class="text-sm bg-purple-100 text-purple-700 hover:bg-purple-200 font-semibold py-1 px-3 rounded-full">✨ Sugerir Trama</button></div><textarea id="plot" name="plot" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500" placeholder="Ej: Ha perdido su zanahoria cohete..." required></textarea>
                         </div>
-                        <div><label for="style" class="block text-sm font-medium text-gray-600 mb-1">Estilo de
-                                ilustración:</label><select id="style" name="style"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500">
+                        <div><label for="style" class="block text-sm font-medium text-gray-600 mb-1">Estilo de ilustración:</label><select id="style" name="style" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500">
                                 <option value="estilo acuarela digital">Acuarela digital</option>
                                 <option value="estilo libro de cuentos clásico">Libro de cuentos clásico</option>
                                 <option value="estilo de dibujos animados alegres">Dibujos animados alegres</option>
                                 <option value="arte de fantasía encantado">Fantasía encantada</option>
                             </select></div>
-                        <div><label for="visual_modifier" class="block text-sm font-medium text-gray-600 mb-1">Dinamismo
-                                Visual:</label><select id="visual_modifier" name="visual_modifier"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500">
+                        <div><label for="visual_modifier" class="block text-sm font-medium text-gray-600 mb-1">Dinamismo Visual:</label><select id="visual_modifier" name="visual_modifier" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500">
                                 <option value="variado">Variado (Recomendado)</option>
                                 <option value="planos cercanos">Enfocar en Personajes</option>
                                 <option value="planos generales">Mostrar el Entorno</option>
                             </select></div>
-                        <div><label for="reading_level" class="block text-sm font-medium text-gray-600 mb-1">Nivel de
-                                Lectura:</label><select id="reading_level" name="reading_level"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500">
+                        <div><label for="reading_level" class="block text-sm font-medium text-gray-600 mb-1">Nivel de Lectura:</label><select id="reading_level" name="reading_level" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500">
                                 <option value="para niños de 3 a 6 años">Infantil (3-6 años)</option>
                                 <option value="para niños de 7 a 12 años">Juvenil (7-12 años)</option>
                                 <option value="para adolescentes de 13+ años">Adolescente (13+ años)</option>
                             </select></div>
-                        <button type="submit" id="generate-btn"
-                            class="w-full bg-pink-500 text-white font-bold py-3 px-4 rounded-md hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-all flex items-center justify-center">
+                        <button type="submit" id="generate-btn" class="w-full bg-pink-500 text-white font-bold py-3 px-4 rounded-md hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-all flex items-center justify-center">
                             <span id="btn-text">Generar Mi Cuento</span>
-                            <svg id="btn-loader"
-                                class="animate-spin h-5 w-5 text-white hidden ml-2"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                    stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                </path>
+                            <svg id="btn-loader" class="animate-spin h-5 w-5 text-white hidden ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
                         </button>
                     </form>
                 </div>
-                <div id="ebook-container"
-                    class="bg-gray-50 p-6 rounded-xl border border-gray-200 flex flex-col items-center justify-center min-h-[500px]">
-                    <div id="ebook-placeholder" class="text-center text-gray-400"><svg
-                            xmlns="http://www.w3.org/2000/svg" class="mx-auto h-24 w-24 text-gray-300" fill="none"
-                            viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-                                d="M12 6.253v11.494m-9-5.494h18M6.613 4.512l10.774 14.976M4.512 17.387l14.976-10.774M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <div id="ebook-container" class="bg-gray-50 p-6 rounded-xl border border-gray-200 flex flex-col items-center justify-center min-h-[500px]">
+                    <div id="ebook-placeholder" class="text-center text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-24 w-24 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v11.494m-9-5.494h18M6.613 4.512l10.774 14.976M4.512 17.387l14.976-10.774M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <p class="mt-4 font-brand text-2xl">Tu cuento aparecerá aquí...</p>
                     </div>
@@ -304,38 +145,27 @@
                 </div>
             </main>
         </section>
+
         <section id="ejemplos" class="mt-24 text-center">
             <h2 class="font-brand text-4xl font-bold text-gray-800">Cuentos de Muestra</h2>
             <p class="mt-2 text-gray-500">Haz clic en un ejemplo para generar una vista previa.</p>
             <div class="mt-12 grid md:grid-cols-3 gap-8">
-                <a href="#" id="example-lara"
-                    class="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform hover:scale-105 transition-transform flex flex-col"><img
-                        src="https://placehold.co/600x400/fecaca/991b1b?text=Lara+la+Exploradora"
-                        alt="Ejemplo de cuento 1" class="w-full h-48 object-cover">
+                <a href="#" id="example-lara" class="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform hover:scale-105 transition-transform flex flex-col"><img src="https://placehold.co/600x400/fecaca/991b1b?text=Lara+la+Exploradora" alt="Ejemplo de cuento 1" class="w-full h-48 object-cover">
                     <div class="p-6 flex-grow flex flex-col">
                         <h3 class="font-brand text-2xl font-bold">Lara la Exploradora</h3>
-                        <p class="mt-2 text-gray-500 text-sm">Lara descubre un mapa misterioso en el jardín y se embarca
-                            en una aventura para encontrar el tesoro perdido de los ladridos.</p>
+                        <p class="mt-2 text-gray-500 text-sm">Lara descubre un mapa misterioso en el jardín y se embarca en una aventura para encontrar el tesoro perdido de los ladridos.</p>
                     </div>
                 </a>
-                <a href="#" id="example-max"
-                    class="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform hover:scale-105 transition-transform flex flex-col"><img
-                        src="https://placehold.co/600x400/d1fae5/065f46?text=Max+en+el+Espacio"
-                        alt="Ejemplo de cuento 2" class="w-full h-48 object-cover">
+                <a href="#" id="example-max" class="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform hover:scale-105 transition-transform flex flex-col"><img src="https://placehold.co/600x400/d1fae5/065f46?text=Max+en+el+Espacio" alt="Ejemplo de cuento 2" class="w-full h-48 object-cover">
                     <div class="p-6 flex-grow flex flex-col">
                         <h3 class="font-brand text-2xl font-bold">Max en el Espacio</h3>
-                        <p class="mt-2 text-gray-500 text-sm">El gato Max construye un cohete de cartón y viaja a la
-                            luna, donde se hace amigo de los ratones lunares que aman el queso.</p>
+                        <p class="mt-2 text-gray-500 text-sm">El gato Max construye un cohete de cartón y viaja a la luna, donde se hace amigo de los ratones lunares que aman el queso.</p>
                     </div>
                 </a>
-                <a href="#" id="example-rocky"
-                    class="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform hover:scale-105 transition-transform flex flex-col"><img
-                        src="https://placehold.co/600x400/e0e7ff/3730a3?text=Rocky+el+Detective"
-                        alt="Ejemplo de cuento 3" class="w-full h-48 object-cover">
+                <a href="#" id="example-rocky" class="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform hover:scale-105 transition-transform flex flex-col"><img src="https://placehold.co/600x400/e0e7ff/3730a3?text=Rocky+el+Detective" alt="Ejemplo de cuento 3" class="w-full h-48 object-cover">
                     <div class="p-6 flex-grow flex flex-col">
                         <h3 class="font-brand text-2xl font-bold">Rocky el Detective</h3>
-                        <p class="mt-2 text-gray-500 text-sm">El misterio de la galleta desaparecida. El astuto hamster
-                            Rocky sigue las migas para resolver su caso más delicioso.</p>
+                        <p class="mt-2 text-gray-500 text-sm">El misterio de la galleta desaparecida. El astuto hamster Rocky sigue las migas para resolver su caso más delicioso.</p>
                     </div>
                 </a>
             </div>
@@ -345,11 +175,10 @@
             <h2 class="font-brand text-4xl font-bold text-gray-800">Mi Biblioteca de Cuentos</h2>
             <p class="mt-2 text-gray-500">Aquí están todas las aventuras que has creado.</p>
             <button id="clear-stories-btn" class="mt-4 bg-red-600 text-white font-bold py-2 px-4 rounded hover:bg-red-700 transition">🗑 Borrar cuentos guardados</button>
-            <div id="saved-stories-grid" class="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Saved stories will be injected here -->
-            </div>
+            <div id="saved-stories-grid" class="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
         </section>
     </div>
+
     <footer class="bg-white mt-16 py-8">
         <div class="container mx-auto text-center text-gray-500">
             <p>&copy; 2024 PetStories. Creado con ❤️ y un poco de magia IA.</p>
@@ -358,49 +187,93 @@
 
     <!-- Auth Modal -->
     <div id="auth-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full relative">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full relative overflow-y-auto max-h-[90vh]">
             <button id="close-auth-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
-            <h2 id="auth-title" class="font-brand text-3xl font-bold text-gray-800 mb-6 text-center">Únete a la Aventura</h2>
-            <form id="email-form" class="space-y-4">
-                <input type="text" id="name-input" placeholder="Tu nombre" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
-                <input type="email" id="email-input" placeholder="Correo electrónico" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
-                <input type="password" id="password-input" placeholder="Contraseña" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
-                <div id="google-signin-button" class="flex justify-center mb-2"></div>
-                <p id="auth-error-message" class="text-red-500 text-sm text-center h-4"></p>
-                <button type="submit" id="auth-submit-btn" class="w-full bg-pink-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-pink-600 transition-colors">Registrarse</button>
+            
+            <!-- Tab de Registro -->
+            <div id="register-tab" class="space-y-4">
+                <h2 class="font-brand text-3xl font-bold text-gray-800 mb-6 text-center">Únete a la Aventura</h2>
+                <form id="register-form" class="space-y-4">
+                    <input type="text" id="register-name" placeholder="Tu nombre" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500" required>
+                    <input type="email" id="register-email" placeholder="Correo electrónico" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500" required>
+                    <input type="password" id="register-password" placeholder="Contraseña" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500" required>
+                    <input type="password" id="register-password-confirm" placeholder="Confirmar contraseña" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500" required>
+                    <p id="register-error" class="text-red-500 text-sm text-center h-4"></p>
+                    <button type="submit" class="w-full bg-pink-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-pink-600 transition-colors">Registrarse</button>
+                </form>
+                <hr class="my-6">
+                <div id="google-signin-button-register" class="flex justify-center"></div>
                 <p class="text-center text-sm text-gray-500">
-                    <span id="auth-prompt-text">¿Ya tienes una cuenta?</span>
-                    <a href="#" id="auth-toggle-link" class="font-semibold text-pink-500 hover:underline">Inicia Sesión</a>
+                    ¿Ya tienes una cuenta? <a href="#" id="toggle-to-login" class="font-semibold text-pink-500 hover:underline">Inicia Sesión</a>
                 </p>
-            </form>
+            </div>
+
+            <!-- Tab de Login -->
+            <div id="login-tab" class="hidden space-y-4">
+                <h2 class="font-brand text-3xl font-bold text-gray-800 mb-6 text-center">Bienvenido/a de Nuevo</h2>
+                <form id="login-form" class="space-y-4">
+                    <input type="email" id="login-email" placeholder="Correo electrónico" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500" required>
+                    <input type="password" id="login-password" placeholder="Contraseña" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500" required>
+                    <p id="login-error" class="text-red-500 text-sm text-center h-4"></p>
+                    <button type="submit" class="w-full bg-pink-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-pink-600 transition-colors">Iniciar Sesión</button>
+                </form>
+                <hr class="my-6">
+                <div id="google-signin-button-login" class="flex justify-center"></div>
+                <p class="text-center text-sm text-gray-500">
+                    <a href="#" id="forgot-password-link" class="font-semibold text-blue-500 hover:underline">¿Olvidaste tu contraseña?</a>
+                </p>
+                <p class="text-center text-sm text-gray-500">
+                    ¿No tienes una cuenta? <a href="#" id="toggle-to-register" class="font-semibold text-pink-500 hover:underline">Regístrate</a>
+                </p>
+            </div>
+
+            <!-- Tab de Recuperación de Contraseña -->
+            <div id="reset-tab" class="hidden space-y-4">
+                <h2 class="font-brand text-3xl font-bold text-gray-800 mb-6 text-center">Recuperar Contraseña</h2>
+                <form id="reset-form" class="space-y-4">
+                    <p class="text-gray-600 text-sm mb-4">Ingresa tu correo electrónico y te enviaremos un enlace para recuperar tu contraseña.</p>
+                    <input type="email" id="reset-email" placeholder="Tu correo electrónico" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500" required>
+                    <p id="reset-error" class="text-red-500 text-sm text-center h-4"></p>
+                    <button type="submit" class="w-full bg-blue-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors">Enviar Enlace</button>
+                </form>
+                <p class="text-center text-sm text-gray-500 mt-6">
+                    <a href="#" id="back-to-login-link" class="font-semibold text-pink-500 hover:underline">Volver a Iniciar Sesión</a>
+                </p>
+            </div>
+
+            <!-- Tab de Cambio de Contraseña con Token -->
+            <div id="new-password-tab" class="hidden space-y-4">
+                <h2 class="font-brand text-3xl font-bold text-gray-800 mb-6 text-center">Nueva Contraseña</h2>
+                <form id="new-password-form" class="space-y-4">
+                    <input type="hidden" id="reset-token">
+                    <input type="password" id="new-password" placeholder="Nueva contraseña" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500" required>
+                    <input type="password" id="new-password-confirm" placeholder="Confirmar nueva contraseña" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500" required>
+                    <p id="new-password-error" class="text-red-500 text-sm text-center h-4"></p>
+                    <button type="submit" class="w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 transition-colors">Cambiar Contraseña</button>
+                </form>
+            </div>
         </div>
     </div>
 
     <div id="flipbook-modal" class="fixed inset-0 w-full h-full z-[60] hidden items-center justify-center p-4">
-        <div id="flipbook-container" class="relative flipbook"></div><button id="close-flipbook"
-            class="absolute top-4 right-4 text-white text-5xl font-bold">&times;</button>
+        <div id="flipbook-container" class="relative flipbook"></div>
+        <button id="close-flipbook" class="absolute top-4 right-4 text-white text-5xl font-bold">&times;</button>
     </div>
-    <div id="print-order-modal"
-        class="fixed inset-0 w-full h-full z-[60] hidden items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+
+    <div id="print-order-modal" class="fixed inset-0 w-full h-full z-[60] hidden items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full">
             <h2 class="font-brand text-3xl font-bold text-gray-800 mb-4">¡Pide tu Cuento en Tapa Dura!</h2>
-            <p class="text-gray-600 mb-6">Recibe una copia física de alta calidad de la aventura de tu mascota. ¡Un
-                recuerdo para siempre!</p>
+            <p class="text-gray-600 mb-6">Recibe una copia física de alta calidad de la aventura de tu mascota. ¡Un recuerdo para siempre!</p>
             <form id="print-form">
                 <div class="space-y-4">
-                    <div><label for="print-name" class="block text-sm font-medium text-gray-600">Nombre
-                            Completo</label><input type="text" id="print-name"
-                            class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md" required></div>
-                    <div><label for="print-address" class="block text-sm font-medium text-gray-600">Dirección de
-                            Envío</label><textarea id="print-address" rows="3"
-                            class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md" required></textarea></div>
+                    <div><label for="print-name" class="block text-sm font-medium text-gray-600">Nombre Completo</label><input type="text" id="print-name" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md" required></div>
+                    <div><label for="print-address" class="block text-sm font-medium text-gray-600">Dirección de Envío</label><textarea id="print-address" rows="3" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md" required></textarea></div>
                     <div class="text-center font-bold text-xl text-pink-500 py-2">Total: 24,99 €</div>
                 </div>
-                <div class="mt-8 flex justify-end space-x-4"><button type="button" id="cancel-print-btn"
-                        class="bg-gray-200 text-gray-700 font-bold py-2 px-6 rounded-full hover:bg-gray-300">Cancelar</button><button
-                        type="submit"
-                        class="bg-green-500 text-white font-bold py-2 px-6 rounded-full hover:bg-green-600">Realizar
-                        Pedido</button></div>
+                <div class="mt-8 flex justify-end space-x-4">
+                    <button type="button" id="cancel-print-btn" class="bg-gray-200 text-gray-700 font-bold py-2 px-6 rounded-full hover:bg-gray-300">Cancelar</button>
+                    <button type="submit" class="bg-green-500 text-white font-bold py-2 px-6 rounded-full hover:bg-green-600">Realizar Pedido</button>
+                </div>
             </form>
         </div>
     </div>
@@ -408,711 +281,621 @@
     <div id="toast-notification"></div>
 
     <script type="module">
-        // --- INICIO DEL CÓDIGO DE LA APLICACIÓN ---
-        document.addEventListener('DOMContentLoaded', () => {
+        const googleAiApiKey = window.googleAiApiKey || "AIzaSyBLsNvpfVDDxRSfDMo3LHOKkxYA2b-KFgA";
+        const googleClientId = window.googleClientId || "90799928498-epmcc1ufu2bsss7p3j9ni0tpavkrd8dp.apps.googleusercontent.com";
 
-            // --- App Config (Provided by User) ---
-            // INSTRUCCIONES: Reemplaza las cadenas de abajo con tus claves.
-            // Consigue tu API Key en https://aistudio.google.com/app/apikey
-            // y tu Client ID de Google en https://console.cloud.google.com/
-            const googleAiApiKey = window.googleAiApiKey || "AIzaSyBLsNvpfVDDxRSfDMo3LHOKkxYA2b-KFgA";
-            const googleClientId = window.googleClientId || "90799928498-epmcc1ufu2bsss7p3j9ni0tpavkrd8dp.apps.googleusercontent.com";
-            
-            // --- DOM Elements ---
-            const storyForm = document.getElementById('story-form');
-            const generateBtn = document.getElementById('generate-btn');
-            const ebookContainer = document.getElementById('ebook-container');
-            const ebookContent = document.getElementById('ebook-content');
-            const loadingView = document.getElementById('loading-view');
-            const loadingMessage = document.getElementById('loading-message');
-            const ebookPlaceholder = document.getElementById('ebook-placeholder');
-            const petImageInput = document.getElementById('pet_image');
-            const imagePreview = document.getElementById('image_preview');
-            const characterDescInput = document.getElementById('character_desc');
-            const suggestPlotBtn = document.getElementById('suggest-plot-btn');
-            const plotSuggestionsContainer = document.getElementById('plot-suggestions');
-            const plotInput = document.getElementById('plot');
-            const flipbookModal = document.getElementById('flipbook-modal');
-            const flipbookContainer = document.getElementById('flipbook-container');
-            const closeFlipbookBtn = document.getElementById('close-flipbook');
-            const greeting = document.getElementById('greeting');
-            const printModal = document.getElementById('print-order-modal');
-            const cancelPrintBtn = document.getElementById('cancel-print-btn');
-            const printForm = document.getElementById('print-form');
-            const toast = document.getElementById('toast-notification');
-            const savedStoriesSection = document.getElementById('mis-cuentos');
-            const savedStoriesGrid = document.getElementById('saved-stories-grid');
-            const clearStoriesBtn = document.getElementById('clear-stories-btn');
-            
-            // Auth UI Elements
-            const authModal = document.getElementById('auth-modal');
-            const authButton = document.getElementById('auth-button');
-            const closeAuthModalBtn = document.getElementById('close-auth-modal');
-            const emailForm = document.getElementById('email-form');
-            const nameInput = document.getElementById('name-input');
-            const emailInput = document.getElementById('email-input');
-            const passwordInput = document.getElementById('password-input');
-            const authErrorMessage = document.getElementById('auth-error-message');
-            const authTitle = document.getElementById('auth-title');
-            const authSubmitBtn = document.getElementById('auth-submit-btn');
-            const authPromptText = document.getElementById('auth-prompt-text');
-            const authToggleLink = document.getElementById('auth-toggle-link');
-            const userInfo = document.getElementById('user-info');
-            const userGreeting = document.getElementById('user-greeting');
-            const logoutBtn = document.getElementById('logout-btn');
-            const googleSignInButton = document.getElementById('google-signin-button');
+        // === ELEMENTS ===
+        const authModal = document.getElementById('auth-modal');
+        const authButton = document.getElementById('auth-button');
+        const closeAuthModalBtn = document.getElementById('close-auth-modal');
+        const registerTab = document.getElementById('register-tab');
+        const loginTab = document.getElementById('login-tab');
+        const resetTab = document.getElementById('reset-tab');
+        const newPasswordTab = document.getElementById('new-password-tab');
+        const registerForm = document.getElementById('register-form');
+        const loginForm = document.getElementById('login-form');
+        const resetForm = document.getElementById('reset-form');
+        const newPasswordForm = document.getElementById('new-password-form');
+        const userInfo = document.getElementById('user-info');
+        const userGreeting = document.getElementById('user-greeting');
+        const logoutBtn = document.getElementById('logout-btn');
+        const greeting = document.getElementById('greeting');
+        const toast = document.getElementById('toast-notification');
+        const storyForm = document.getElementById('story-form');
+        const generateBtn = document.getElementById('generate-btn');
+        const ebookContainer = document.getElementById('ebook-container');
+        const ebookContent = document.getElementById('ebook-content');
+        const ebookPlaceholder = document.getElementById('ebook-placeholder');
+        const loadingView = document.getElementById('loading-view');
+        const loadingMessage = document.getElementById('loading-message');
+        const flipbookModal = document.getElementById('flipbook-modal');
+        const flipbookContainer = document.getElementById('flipbook-container');
+        const closeFlipbookBtn = document.getElementById('close-flipbook');
+        const printModal = document.getElementById('print-order-modal');
+        const cancelPrintBtn = document.getElementById('cancel-print-btn');
+        const printForm = document.getElementById('print-form');
+        const suggestPlotBtn = document.getElementById('suggest-plot-btn');
+        const plotInput = document.getElementById('plot');
+        const characterDescInput = document.getElementById('character_desc');
+        const petImageInput = document.getElementById('pet_image');
+        const imagePreview = document.getElementById('image_preview');
+        const savedStoriesSection = document.getElementById('mis-cuentos');
+        const savedStoriesGrid = document.getElementById('saved-stories-grid');
+        const clearStoriesBtn = document.getElementById('clear-stories-btn');
 
+        let currentUser = null;
+        let currentPage = 0;
+        let totalPages = 0;
+        let storyPagesData = [];
+        let currentStoryTitle = '';
+        let coverImageData = '';
 
-            // --- App State ---
-            let currentPage = 0;
-            let totalPages = 0;
-            let storyPagesData = [];
-            let currentStoryTitle = '';
-            let coverImageData = '';
-            let currentUser = null; // Simulated user session
-            let isRegisterMode = true; // Start in register mode 
+        const exampleStories = {
+            'example-lara': { character: 'Lara', character_desc: 'Una perrita golden retriever, joven y aventurera, con un pelaje dorado brillante y una bandana roja en el cuello.', setting: 'Un bosque mágico', plot: 'Lara descubre un mapa misterioso y se embarca en la búsqueda de un tesoro escondido', style: 'estilo libro de cuentos clásico', visual_modifier: 'variado', reading_level: 'para niños de 7 a 12 años' },
+            'example-max': { character: 'Max', character_desc: 'Un gato negro y sigiloso con brillantes ojos verdes y un collar con un pequeño cascabel que nunca suena.', setting: 'La luna, una estación espacial futurista', plot: 'Max construye un cohete de cartón y viaja a la luna, donde descubre una colonia de ratones lunares', style: 'estilo de dibujos animados alegres', visual_modifier: 'variado', reading_level: 'para niños de 3 a 6 años' },
+            'example-rocky': { character: 'Rocky', character_desc: 'Un pequeño y regordete hamster de color marrón y blanco, con grandes mofletes y un sombrero de detective de papel.', setting: 'Una casa acogedora y sus alrededores', plot: 'El misterio de la galleta desaparecida. Rocky debe usar su astucia para resolver el caso', style: 'arte de fantasía encantado', visual_modifier: 'planos cercanos', reading_level: 'para niños de 3 a 6 años' }
+        };
 
-            const exampleStories = {
-                'example-lara': { character: 'Lara', character_desc: 'Una perrita golden retriever, joven y aventurera, con un pelaje dorado brillante y una bandana roja en el cuello.', setting: 'Un bosque mágico', plot: 'Lara descubre un mapa misterioso y se embarca en la búsqueda de un tesoro escondido', style: 'estilo libro de cuentos clásico', visual_modifier: 'variado', reading_level: 'para niños de 7 a 12 años' },
-                'example-max': { character: 'Max', character_desc: 'Un gato negro y sigiloso con brillantes ojos verdes y un collar con un pequeño cascabel que nunca suena.', setting: 'La luna, una estación espacial futurista', plot: 'Max construye un cohete de cartón y viaja a la luna, donde descubre una colonia de ratones lunares', style: 'estilo de dibujos animados alegres', visual_modifier: 'variado', reading_level: 'para niños de 3 a 6 años' },
-                'example-rocky': { character: 'Rocky', character_desc: 'Un pequeño y regordete hamster de color marrón y blanco, con grandes mofletes y un sombrero de detective de papel.', setting: 'Una casa acogedora y sus alrededores', plot: 'El misterio de la galleta desaparecida. Rocky debe usar su astucia para resolver el caso', style: 'arte de fantasía encantado', visual_modifier: 'planos cercanos', reading_level: 'para niños de 3 a 6 años' }
-            };
+        // === UTILITY FUNCTIONS ===
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
 
-            // --- Initialization ---
-            initApp();
+        function switchTab(show, hide1, hide2 = null, hide3 = null) {
+            show.classList.remove('hidden');
+            hide1.classList.add('hidden');
+            if (hide2) hide2.classList.add('hidden');
+            if (hide3) hide3.classList.add('hidden');
+        }
 
-            function initApp() {
-                 if (!googleAiApiKey || googleAiApiKey.includes("REEMPLAZA")) {
-                    showConfigurationError("La clave de API de Google AI no está configurada. Por favor, sigue las instrucciones en el código para añadir tu clave de API de Google AI Studio.");
-                    return;
-                }
-                setupEventListeners();
-                initGoogleSignIn();
-                checkSession();
-            }
-
-            function showConfigurationError(message) {
-                 const body = document.querySelector('body');
-                 body.innerHTML = `<div class="h-screen w-screen flex items-center justify-center p-4 bg-gray-100">
-                        <div class="text-center text-red-700 bg-red-100 p-8 rounded-lg shadow-2xl max-w-2xl">
-                            <h3 class="font-brand font-bold text-3xl text-red-800">Error de Configuración Crítico</h3>
-                            <p class="mt-4 text-gray-700">${message}</p>
-                        </div>
-                    </div>`;
-            }
-            
-            function setupEventListeners() {
-                document.querySelectorAll('[id^="example-"]').forEach(card => {
-                    card.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const exampleData = exampleStories[card.id];
-                        if (exampleData) {
-                            document.getElementById('crear-cuento').scrollIntoView({ behavior: 'smooth' });
-                            handleStoryGeneration(null, exampleData, false);
-                        }
-                    });
-                });
-                storyForm.addEventListener('submit', (e) => handleStoryGeneration(e, null, true));
-                suggestPlotBtn.addEventListener('click', handlePlotSuggestion);
-                petImageInput.addEventListener('change', handleImagePreview);
-                
-                closeFlipbookBtn.addEventListener('click', () => flipbookModal.style.display = 'none');
-                cancelPrintBtn.addEventListener('click', () => printModal.style.display = 'none');
-                printForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    printModal.style.display = 'none';
-                    showToast("¡Pedido recibido! (Esto es una simulación).");
-                });
-                
-                authButton.addEventListener('click', () => {
-                    toggleAuthMode(null, true); // Open in register mode by default
-                    authModal.classList.remove('hidden');
-                });
-                closeAuthModalBtn.addEventListener('click', () => authModal.classList.add('hidden'));
-                authToggleLink.addEventListener('click', toggleAuthMode);
-                emailForm.addEventListener('submit', handleAuthFormSubmit);
-                logoutBtn.addEventListener('click', handleLogout);
-                clearStoriesBtn.addEventListener('click', handleClearStories);
-            }
-
-            // --- Auth Functions ---
-            function checkSession() {
-                const userSession = sessionStorage.getItem('petstories_user');
-                if (userSession) {
-                    updateUserUI(JSON.parse(userSession));
-                } else {
-                    updateUserUI(null);
-                }
-            }
-
-            function updateUserUI(user) {
-                currentUser = user;
-                if (user) {
-                    authButton.classList.add('hidden');
-                    userInfo.classList.remove('hidden');
-                    userInfo.classList.add('flex');
-                    userGreeting.textContent = `¡Hola, ${user.name}!`;
-                    greeting.textContent = `¡Hola, ${user.name}!`;
-                    authModal.classList.add('hidden');
-                    loadUserStories();
-                } else {
-                    authButton.classList.remove('hidden');
-                    userInfo.classList.add('hidden');
-                    userInfo.classList.remove('flex');
-                    greeting.textContent = "¡Hola!";
-                    clearUserStories();
-                }
-            }
-
-            function toggleAuthMode(e, forceRegister = false) {
-                if(e) e.preventDefault();
-                isRegisterMode = forceRegister ? true : !isRegisterMode;
-                authErrorMessage.textContent = '';
-                if (isRegisterMode) {
-                    authTitle.textContent = 'Únete a la Aventura';
-                    nameInput.classList.remove('hidden');
-                    nameInput.required = true;
-                    authSubmitBtn.textContent = 'Registrarse';
-                    authPromptText.textContent = '¿Ya tienes una cuenta?';
-                    authToggleLink.textContent = 'Inicia Sesión';
-                } else {
-                    authTitle.textContent = 'Bienvenido/a de Nuevo';
-                    nameInput.classList.add('hidden');
-                    nameInput.required = false;
-                    authSubmitBtn.textContent = 'Iniciar Sesión';
-                    authPromptText.textContent = '¿No tienes una cuenta?';
-                    authToggleLink.textContent = 'Regístrate';
-                }
-            }
-            
-            function handleAuthFormSubmit(e) {
-                e.preventDefault();
-                const name = nameInput.value;
-                const email = emailInput.value.toLowerCase();
-                const password = passwordInput.value;
-                let users = JSON.parse(localStorage.getItem('petstories_users')) || {};
-
-                if (isRegisterMode) {
-                    if (!name || !email || !password) {
-                        authErrorMessage.textContent = 'Por favor, rellena todos los campos.';
-                        return;
-                    }
-                    if (users[email]) {
-                        authErrorMessage.textContent = 'Este email ya está registrado.';
-                        return;
-                    }
-                    users[email] = { name, password }; // Note: Storing password in plain text is not secure for real apps.
-                    localStorage.setItem('petstories_users', JSON.stringify(users));
-                    const newUser = { name, email };
-                    sessionStorage.setItem('petstories_user', JSON.stringify(newUser));
-                    updateUserUI(newUser);
-                    showToast(`¡Registro completado! Bienvenido/a, ${name}.`);
-                } else {
-                     if (!email || !password) {
-                        authErrorMessage.textContent = 'Por favor, introduce email y contraseña.';
-                        return;
-                    }
-                    if (!users[email] || users[email].password !== password) {
-                        authErrorMessage.textContent = 'Email o contraseña incorrectos.';
-                        return;
-                    }
-                    const loggedInUser = { name: users[email].name, email };
-                    sessionStorage.setItem('petstories_user', JSON.stringify(loggedInUser));
-                    updateUserUI(loggedInUser);
-                    showToast(`¡Bienvenido/a de nuevo, ${users[email].name}!`);
-                }
-            }
-            
-            function handleLogout(e) {
-                e.preventDefault();
-                sessionStorage.removeItem('petstories_user');
+        // === AUTH MANAGEMENT ===
+        function checkSession() {
+            const session = window.authManager.getCurrentSession();
+            if (session) {
+                updateUserUI(session);
+            } else {
                 updateUserUI(null);
-                if (window.google && google.accounts.id) {
-                    google.accounts.id.disableAutoSelect();
-                }
-                showToast('Has cerrado sesión.');
+            }
+        }
+
+        function updateUserUI(user) {
+            currentUser = user;
+            if (user) {
+                authButton.classList.add('hidden');
+                userInfo.classList.remove('hidden');
+                userInfo.classList.add('flex');
+                userGreeting.textContent = `¡Hola, ${user.name}!`;
+                greeting.textContent = `¡Hola, ${user.name}!`;
+                authModal.classList.add('hidden');
+                loadUserStories();
+            } else {
+                authButton.classList.remove('hidden');
+                userInfo.classList.add('hidden');
+                userInfo.classList.remove('flex');
+                greeting.textContent = "¡Hola!";
+                clearUserStories();
+            }
+        }
+
+        // === EVENT LISTENERS ===
+        authButton.addEventListener('click', () => {
+            switchTab(registerTab, loginTab, resetTab, newPasswordTab);
+            authModal.classList.remove('hidden');
+        });
+
+        closeAuthModalBtn.addEventListener('click', () => authModal.classList.add('hidden'));
+
+        document.getElementById('toggle-to-login').addEventListener('click', (e) => {
+            e.preventDefault();
+            switchTab(loginTab, registerTab, resetTab, newPasswordTab);
+        });
+
+        document.getElementById('toggle-to-register').addEventListener('click', (e) => {
+            e.preventDefault();
+            switchTab(registerTab, loginTab, resetTab, newPasswordTab);
+        });
+
+        document.getElementById('forgot-password-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            switchTab(resetTab, loginTab, registerTab, newPasswordTab);
+        });
+
+        document.getElementById('back-to-login-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            switchTab(loginTab, resetTab, registerTab, newPasswordTab);
+        });
+
+        // === REGISTER ===
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const passwordConfirm = document.getElementById('register-password-confirm').value;
+            const errorEl = document.getElementById('register-error');
+
+            if (password !== passwordConfirm) {
+                errorEl.textContent = 'Las contraseñas no coinciden.';
+                return;
             }
 
-            function handleClearStories() {
-                if (confirm('¿Seguro que deseas eliminar todos tus cuentos guardados?')) {
-                    if (currentUser) {
-                        fetch(`/api/stories?user=${encodeURIComponent(currentUser.email)}`, { method: 'DELETE' }).catch(() => {});
-                    }
-                    localStorage.removeItem('petstories_stories');
-                    clearUserStories();
-                    showToast('Se han eliminado todos los cuentos guardados.');
-                }
+            try {
+                window.authManager.registerUser(email, password, name);
+                const session = window.authManager.loginWithEmail(email, password);
+                updateUserUI(session);
+                showToast(`¡Registro completado! Bienvenido/a, ${name}.`);
+            } catch (err) {
+                errorEl.textContent = err.message;
+            }
+        });
+
+        // === LOGIN ===
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const errorEl = document.getElementById('login-error');
+
+            try {
+                const session = window.authManager.loginWithEmail(email, password);
+                updateUserUI(session);
+                showToast(`¡Bienvenido/a de nuevo, ${session.name}!`);
+            } catch (err) {
+                errorEl.textContent = err.message;
+            }
+        });
+
+        // === PASSWORD RESET ===
+        resetForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('reset-email').value;
+            const errorEl = document.getElementById('reset-error');
+
+            try {
+                const result = window.authManager.requestPasswordReset(email);
+                showToast(`Enlace de recuperación generado. Token: ${result.token}`);
+                document.getElementById('reset-token').value = result.token;
+                switchTab(newPasswordTab, resetTab, loginTab, registerTab);
+            } catch (err) {
+                errorEl.textContent = err.message;
+            }
+        });
+
+        newPasswordForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const token = document.getElementById('reset-token').value;
+            const newPassword = document.getElementById('new-password').value;
+            const newPasswordConfirm = document.getElementById('new-password-confirm').value;
+            const errorEl = document.getElementById('new-password-error');
+
+            if (newPassword !== newPasswordConfirm) {
+                errorEl.textContent = 'Las contraseñas no coinciden.';
+                return;
             }
 
-            function initGoogleSignIn() {
-                if (!googleClientId || googleClientId.includes('REEMPLAZA')) return;
-                google.accounts.id.initialize({
-                    client_id: googleClientId,
-                    callback: handleGoogleCredentialResponse
-                });
-                google.accounts.id.renderButton(googleSignInButton, { theme: 'outline', size: 'large', width: 250 });
+            try {
+                window.authManager.resetPasswordWithToken(token, newPassword);
+                showToast('Contraseña cambiada exitosamente. Inicia sesión.');
+                switchTab(loginTab, newPasswordTab, registerTab, resetTab);
+                newPasswordForm.reset();
+            } catch (err) {
+                errorEl.textContent = err.message;
             }
+        });
 
-            function handleGoogleCredentialResponse(response) {
-                try {
-                    const payload = JSON.parse(atob(response.credential.split('.')[1]));
-                    const user = { name: payload.name, email: payload.email, google: true };
-                    sessionStorage.setItem('petstories_user', JSON.stringify(user));
-                    updateUserUI(user);
-                    showToast(`¡Bienvenido/a, ${payload.name}!`);
-                } catch (e) {
-                    console.error('Error processing Google credential', e);
-                    authErrorMessage.textContent = 'No se pudo iniciar sesión con Google.';
-                }
+        // === GOOGLE SIGN-IN ===
+        function initGoogleSignIn() {
+            if (!googleClientId || googleClientId.includes('REEMPLAZA')) return;
+            google.accounts.id.initialize({
+                client_id: googleClientId,
+                callback: handleGoogleCredentialResponse
+            });
+            google.accounts.id.renderButton(document.getElementById('google-signin-button-register'), { theme: 'outline', size: 'large', width: 250 });
+            google.accounts.id.renderButton(document.getElementById('google-signin-button-login'), { theme: 'outline', size: 'large', width: 250 });
+        }
+
+        function handleGoogleCredentialResponse(response) {
+            try {
+                const payload = JSON.parse(atob(response.credential.split('.')[1]));
+                const session = window.authManager.loginWithGoogle(payload);
+                updateUserUI(session);
+                showToast(`¡Bienvenido/a, ${payload.name}!`);
+            } catch (e) {
+                console.error('Error processing Google credential', e);
+                showToast('No se pudo iniciar sesión con Google.');
             }
+        }
 
-            async function loadUserStories() {
-                if (!currentUser) return;
-                try {
-                    const res = await fetch(`/api/stories?user=${encodeURIComponent(currentUser.email)}`);
-                    if (res.ok) {
-                        const stories = await res.json();
-                        renderSavedStories(stories);
-                        return;
-                    }
-                } catch (e) {
-                    console.error('Error loading stories from server', e);
-                }
-
-                const allStories = JSON.parse(localStorage.getItem('petstories_stories')) || {};
-                const userStories = allStories[currentUser.email] || [];
-                renderSavedStories(userStories);
+        // === LOGOUT ===
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.authManager.logout();
+            updateUserUI(null);
+            if (window.google && google.accounts.id) {
+                google.accounts.id.disableAutoSelect();
             }
+            showToast('Has cerrado sesión.');
+        });
 
-            function renderSavedStories(userStories) {
-                if (userStories.length === 0) {
-                    savedStoriesGrid.innerHTML = '<p class="text-gray-500 col-span-full">Aún no has creado ningún cuento. ¡Anímate a crear el primero!</p>';
-                } else {
-                    savedStoriesGrid.innerHTML = '';
-                    userStories.forEach((storyData, index) => createStoryCard(index, storyData));
-                }
-                savedStoriesSection.classList.remove('hidden');
-            }
+        // === STORY GENERATION ===
+        storyForm.addEventListener('submit', (e) => handleStoryGeneration(e, null, true));
+        suggestPlotBtn.addEventListener('click', handlePlotSuggestion);
+        petImageInput.addEventListener('change', handleImagePreview);
+        cancelPrintBtn.addEventListener('click', () => printModal.style.display = 'none');
+        closeFlipbookBtn.addEventListener('click', () => flipbookModal.style.display = 'none');
+        clearStoriesBtn.addEventListener('click', handleClearStories);
+        printForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            printModal.style.display = 'none';
+            showToast("¡Pedido recibido! (Esto es una simulación).");
+        });
 
-            function createStoryCard(storyId, storyData) {
-                const card = document.createElement('a');
-                card.href = '#crear-cuento';
-                card.className = "bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform hover:scale-105 transition-transform flex flex-col";
-                card.innerHTML = `
-                    <img src="${storyData.coverImage}" alt="Portada de ${storyData.title}" class="w-full h-48 object-cover" onerror="this.src='https://placehold.co/600x400/cccccc/333333?text=🐾'">
-                    <div class="p-6 flex-grow flex flex-col">
-                        <h3 class="font-brand text-2xl font-bold">${storyData.title}</h3>
-                    </div>`;
-                card.addEventListener('click', (e) => {
-                    e.preventDefault();
+        // === EXAMPLE STORIES ===
+        document.querySelectorAll('[id^="example-"]').forEach(card => {
+            card.addEventListener('click', (e) => {
+                e.preventDefault();
+                const exampleData = exampleStories[card.id];
+                if (exampleData) {
                     document.getElementById('crear-cuento').scrollIntoView({ behavior: 'smooth' });
-                    renderEbook(storyData.title, storyData.coverImage, storyData.pages);
-                });
-                savedStoriesGrid.appendChild(card);
-            }
+                    handleStoryGeneration(null, exampleData, false);
+                }
+            });
+        });
 
-            function clearUserStories() {
-                savedStoriesSection.classList.add('hidden');
-                savedStoriesGrid.innerHTML = '';
-            }
+        function handlePlotSuggestion() {
+            const character = document.getElementById('character').value || 'un personaje';
+            const setting = document.getElementById('setting').value || 'un lugar mágico';
+            const suggestions = [
+                `${character} descubre un secreto misterioso en ${setting}`,
+                `${character} necesita ayuda para salvar ${setting}`,
+                `${character} encuentra un tesoro escondido en ${setting}`,
+                `${character} hace un nuevo amigo en ${setting}`,
+                `${character} aprende una lección importante en ${setting}`
+            ];
+            const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
+            plotInput.value = randomSuggestion;
+            showToast('Trama sugerida: ' + randomSuggestion);
+        }
 
-            // --- UI Functions ---
+        function handleImagePreview() {
+            const file = petImageInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imagePreview.src = e.target.result;
+                    imagePreview.classList.remove('hidden');
+                    characterDescInput.required = false;
+                }
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.classList.add('hidden');
+                characterDescInput.required = true;
+            }
+        }
+
+        async function handleStoryGeneration(event, predefinedData = null, shouldSave = false) {
+            if (event) event.preventDefault();
             
-            function showToast(message) {
-                toast.textContent = message;
-                toast.classList.add('show');
-                setTimeout(() => { toast.classList.remove('show'); }, 3000);
+            if (!currentUser && shouldSave) {
+                showToast('Por favor, inicia sesión para crear y guardar un cuento.');
+                authModal.classList.remove('hidden');
+                return;
             }
 
-            function setLoading(isLoading, message = '') {
-                generateBtn.disabled = isLoading;
-                generateBtn.querySelector('#btn-text').style.display = isLoading ? 'none' : 'inline';
-                generateBtn.querySelector('#btn-loader').style.display = isLoading ? 'inline-block' : 'none';
-                
-                if (isLoading) {
-                    ebookPlaceholder.style.display = 'none';
-                    ebookContent.style.display = 'none';
-                    ebookContent.innerHTML = '';
-                    loadingView.style.display = 'flex';
-                    loadingMessage.textContent = message;
-                } else {
-                    loadingView.style.display = 'none';
-                    if (ebookContent.innerHTML !== '') {
-                        ebookContent.style.display = 'block';
-                    } else {
-                        ebookPlaceholder.style.display = 'block';
-                    }
-                }
-            }
-
-            function displayError(message) {
-                setLoading(false);
-                ebookPlaceholder.style.display = 'none';
-                ebookContent.innerHTML = `<div class="text-center text-red-500 bg-red-100 p-4 rounded-lg"><h3 class="font-bold">¡Oh no! Algo salió mal</h3><p class="text-sm mt-1">${message}</p></div>`;
-                ebookContent.style.display = 'block';
-            }
-
-            async function handleApiError(response) {
-                let errorBody = 'Could not read error body.';
-                try { errorBody = await response.json(); } catch (e) {
-                    try { errorBody = await response.text(); } catch (readError) { console.error("Could not read response text.", readError); }
-                }
-                console.error("API Error Response:", errorBody);
-                const specificMessage = errorBody?.error?.message || (typeof errorBody === 'string' ? errorBody : JSON.stringify(errorBody));
-                return specificMessage || response.statusText || "Ocurrió un error en la API.";
-            }
+            setLoading(true, "Iniciando la magia...");
+            let storyData;
             
-            function handleImagePreview() {
-                const file = petImageInput.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        imagePreview.src = e.target.result;
-                        imagePreview.classList.remove('hidden');
-                        characterDescInput.required = false;
-                    }
-                    reader.readAsDataURL(file);
-                } else {
-                     imagePreview.classList.add('hidden');
-                     characterDescInput.required = true;
-                }
-            }
-            
-            function extractAndParseJson(text) {
-                const jsonMatch = text.match(/\{[\s\S]*\}/);
-                if (jsonMatch && jsonMatch[0]) {
-                    try { return JSON.parse(jsonMatch[0]); } catch (e) { console.error("Failed to parse extracted JSON:", e, "Original text:", text); }
-                }
-                try { return JSON.parse(text); } catch(e) {
-                    console.error("Failed to parse the entire text as JSON:", e, "Original text:", text);
-                    throw new Error("La IA devolvió una respuesta con formato JSON inválido.");
-                }
-            }
-
-            // --- Core Application Logic ---
-
-            async function handleStoryGeneration(event, predefinedData = null, shouldSave = false) {
-                if (event) event.preventDefault();
+            if (predefinedData) {
+                storyData = predefinedData;
+            } else {
+                const formData = new FormData(storyForm);
+                const petImageFile = formData.get('pet_image');
+                let petDescription = formData.get('character_desc');
                 
-                if (!currentUser && shouldSave) {
-                    showToast('Por favor, inicia sesión para crear y guardar un cuento.');
-                    authModal.classList.remove('hidden');
-                    return;
-                }
-
-                setLoading(true, "Iniciando la magia...");
-                let storyData;
-                
-                if (predefinedData) {
-                    storyData = predefinedData;
-                } else {
-                    const formData = new FormData(storyForm);
-                    const petImageFile = formData.get('pet_image');
-                    let petDescription = formData.get('character_desc');
-                    
-                    if (petImageFile && petImageFile.size > 0) {
-                        try {
-                            setLoading(true, "Analizando la foto de tu mascota...");
-                            const imageBase64 = await readFileAsBase64(petImageFile);
-                            const analysisResult = await analyzePetImage(imageBase64);
-                            if (!analysisResult.isPet) {
-                                displayError("La imagen no parece contener una mascota. Por favor, sube otra foto o descríbela manualmente.");
-                                setLoading(false);
-                                return;
-                            }
-                            petDescription = analysisResult.description;
-                        } catch(error) {
-                             displayError(error.message);
-                             setLoading(false);
-                             return;
+                if (petImageFile && petImageFile.size > 0) {
+                    try {
+                        setLoading(true, "Analizando la foto de tu mascota...");
+                        const imageBase64 = await readFileAsBase64(petImageFile);
+                        const analysisResult = await analyzePetImage(imageBase64);
+                        if (!analysisResult.isPet) {
+                            displayError("La imagen no parece contener una mascota. Por favor, sube otra foto o descríbela manualmente.");
+                            setLoading(false);
+                            return;
                         }
-                    }
-                    
-                    if (!petDescription) {
-                        displayError("Por favor, sube una foto de tu mascota o proporciona una descripción.");
+                        petDescription = analysisResult.description;
+                    } catch(error) {
+                        displayError(error.message);
                         setLoading(false);
                         return;
                     }
-                    
-                    storyData = {
-                        character: formData.get('character'),
-                        character_desc: petDescription,
-                        setting: formData.get('setting'),
-                        plot: formData.get('plot'),
-                        style: formData.get('style'),
-                        visual_modifier: formData.get('visual_modifier'),
-                        reading_level: formData.get('reading_level'),
-                    };
                 }
-
-                try {
-                    setLoading(true, "Escribiendo tu aventura...");
-                    const story = await generateStoryText(storyData);
-                    if (!story || !story.parrafos || story.parrafos.length === 0) {
-                        throw new Error("La IA no generó párrafos para la historia. Inténtalo de nuevo.");
-                    }
-                    currentStoryTitle = story.titulo;
-
-                    setLoading(true, "Creando portada...");
-                    const coverPrompt = window.imageGenerator.generateCoverPrompt(story.titulo, storyData.character_desc, storyData.character, storyData.style);
-                    coverImageData = await window.imageGenerator.generateImage(coverPrompt);
-
-                    const visualModifiers = {
-                        'variado': ['plano general amplio', 'primer plano emocional del personaje', 'toma de acción dinámica', 'vista desde un ángulo bajo', 'vista desde arriba', 'iluminación dramática'],
-                        'planos cercanos': ['primer plano del personaje', 'plano medio mostrando la expresión', 'detalle de las patas del personaje', 'mirada por encima del hombro'],
-                        'planos generales': ['plano general muy amplio mostrando el paisaje', 'vista panorámica', 'el personaje es pequeño en la escena', 'vista de pájaro']
-                    };
-                    const selectedModifierSet = visualModifiers[storyData.visual_modifier] || visualModifiers['variado'];
-                    
-                    const pages = [];
-                    for (let i = 0; i < story.parrafos.length; i++) {
-                        setLoading(true, `Creando ilustraciones... (${i + 1}/${story.parrafos.length})`);
-                        const paragraph = story.parrafos[i];
-                        const randomModifier = selectedModifierSet[Math.floor(Math.random() * selectedModifierSet.length)];
-                        const imagePrompt = window.imageGenerator.generatePagePrompt(storyData.character_desc, storyData.character, paragraph, storyData.style, randomModifier, i, story.parrafos.length);
-                        const imageUrl = await window.imageGenerator.generateImage(imagePrompt);
-                        pages.push({ text: paragraph, imageUrl: imageUrl });
-                    }
-                    
-                    storyPagesData = pages;
-                    renderEbook(story.titulo, coverImageData, pages);
-
-                    if (shouldSave && currentUser) {
-                        const storyToSave = {
-                            title: story.titulo,
-                            coverImage: coverImageData,
-                            pages: pages,
-                            formData: storyData,
-                            createdAt: new Date().toISOString()
-                        };
-                        saveStory(storyToSave);
-                        showToast('¡Tu cuento ha sido guardado!');
-                    }
-
-                } catch (error) {
-                    console.error("Error generating story:", error);
-                    displayError(error.message || "No se pudo generar el cuento. Inténtalo de nuevo.");
-                } finally {
+                
+                if (!petDescription) {
+                    displayError("Por favor, sube una foto de tu mascota o proporciona una descripción.");
                     setLoading(false);
+                    return;
                 }
-            }
-            
-            function saveStoryLocally(storyData) {
-                if (!currentUser) return;
-                const allStories = JSON.parse(localStorage.getItem('petstories_stories')) || {};
-                if (!allStories[currentUser.email]) {
-                    allStories[currentUser.email] = [];
-                }
-                allStories[currentUser.email].push(storyData);
-                try {
-                    localStorage.setItem('petstories_stories', JSON.stringify(allStories));
-                } catch (e) {
-                    console.error('Error saving story to localStorage', e);
-                    showToast('No hay espacio para guardar más cuentos. Borra algunos o usa "Borrar cuentos guardados".');
-                }
+                
+                storyData = {
+                    character: formData.get('character'),
+                    character_desc: petDescription,
+                    setting: formData.get('setting'),
+                    plot: formData.get('plot'),
+                    style: formData.get('style'),
+                    visual_modifier: formData.get('visual_modifier'),
+                    reading_level: formData.get('reading_level'),
+                };
             }
 
-            async function saveStory(storyData) {
-                if (!currentUser) return;
-                try {
-                    const res = await fetch('/api/stories', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ user: currentUser.email, story: storyData })
-                    });
-                    if (!res.ok) throw new Error('Server error');
-                    loadUserStories();
-                } catch (e) {
-                    console.error('Error saving story to server', e);
-                    saveStoryLocally(storyData);
-                    loadUserStories();
+            try {
+                setLoading(true, "Escribiendo tu aventura...");
+                const story = await generateStoryText(storyData);
+                if (!story || !story.parrafos || story.parrafos.length === 0) {
+                    throw new Error("La IA no generó párrafos para la historia. Inténtalo de nuevo.");
                 }
-            }
+                currentStoryTitle = story.titulo;
 
-            // --- API Call Functions ---
+                setLoading(true, "Creando portada...");
+                const coverPrompt = window.imageGenerator.generateCoverPrompt(story.titulo, storyData.character_desc, storyData.character, storyData.style);
+                coverImageData = await window.imageGenerator.generateImage(coverPrompt);
 
-            async function analyzePetImage(imageBase64Data) {
-                const prompt = "Analiza esta imagen. Primero, determina si contiene un animal doméstico (como un perro, gato, conejo, etc.). Responde ÚNICAMENTE con un objeto JSON válido. Si es un animal doméstico, devuelve {\"isPet\": true, \"description\": \"una descripción detallada de su apariencia física, incluyendo raza si es identificable, colores, características únicas, etc.\"}. Si NO es un animal doméstico, devuelve {\"isPet\": false}.";
-                const imageMimeType = imageBase64Data.split(';')[0].split(':')[1];
-                const pureBase64 = imageBase64Data.split(',')[1];
-                const payload = { contents: [{ role: "user", parts: [{ text: prompt }, { inlineData: { mimeType: imageMimeType, data: pureBase64 } }] }], generationConfig: { responseMimeType: "application/json" } };
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${googleAiApiKey}`;
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (!response.ok) {
-                    const errorMessage = await handleApiError(response);
-                    throw new Error(`Error al analizar la imagen: ${errorMessage}`);
+                const visualModifiers = {
+                    'variado': ['plano general amplio', 'primer plano emocional del personaje', 'toma de acción dinámica', 'vista desde un ángulo bajo', 'vista desde arriba'],
+                    'planos cercanos': ['primer plano del personaje', 'plano medio mostrando la expresión', 'detalle de las patas del personaje', 'mirada por encima del hombro'],
+                    'planos generales': ['plano general muy amplio mostrando el paisaje', 'vista panorámica', 'el personaje es pequeño en la escena', 'vista de pájaro']
+                };
+                const selectedModifierSet = visualModifiers[storyData.visual_modifier] || visualModifiers['variado'];
+                
+                const pages = [];
+                for (let i = 0; i < story.parrafos.length; i++) {
+                    setLoading(true, `Creando ilustraciones... (${i + 1}/${story.parrafos.length})`);
+                    const paragraph = story.parrafos[i];
+                    const randomModifier = selectedModifierSet[Math.floor(Math.random() * selectedModifierSet.length)];
+                    const imagePrompt = window.imageGenerator.generatePagePrompt(storyData.character_desc, storyData.character, paragraph, storyData.style, randomModifier, i, story.parrafos.length);
+                    const imageUrl = await window.imageGenerator.generateImage(imagePrompt);
+                    pages.push({ text: paragraph, imageUrl: imageUrl });
                 }
-                const result = await response.json();
-                if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    const text = result.candidates[0].content.parts[0].text;
-                    try { 
-                        return extractAndParseJson(text);
-                    } catch (e) { 
-                        throw new Error("La IA devolvió una respuesta inesperada para el análisis de la imagen."); 
-                    }
-                }
-                throw new Error("La IA no pudo analizar la imagen de la mascota.");
-            }
-            
-            async function generateStoryText(data) {
-                const prompt = `Crea un cuento infantil. La historia debe ser rica, tener un desarrollo claro y una conclusión satisfactoria.
-                    - Personaje principal: ${data.character} (${data.character_desc})
-                    - Lugar: ${data.setting}
-                    - Trama: ${data.plot}
-                    - Complejidad: ${data.reading_level}
-                    Responde ÚNICAMENTE con un objeto JSON válido. El objeto debe contener un "titulo" y un array llamado "parrafos" con exactamente 8 párrafos de texto. Cada párrafo debe ser descriptivo y adecuado para un libro ilustrado infantil.`;
-                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${googleAiApiKey}`;
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (!response.ok) {
-                    const errorMessage = await handleApiError(response);
-                    throw new Error(`Error en la API de texto: ${errorMessage}`);
-                }
-                const result = await response.json();
-                if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    const text = result.candidates[0].content.parts[0].text;
-                    try {
-                        const parsedJson = extractAndParseJson(text);
-                        if (parsedJson && parsedJson.titulo && Array.isArray(parsedJson.parrafos)) {
-                            return parsedJson;
-                        } else {
-                            console.error("Parsed JSON is missing required fields (titulo, parrafos):", parsedJson);
-                            throw new Error("La IA devolvió un JSON con formato incorrecto.");
-                        }
-                    } catch (e) {
-                        console.error("Error in generateStoryText after API call:", e);
-                        throw new Error("La IA devolvió una respuesta inesperada para la historia.");
-                    }
-                }
-                throw new Error("No se pudo generar el texto del cuento. Respuesta de la API vacía.");
-            }
-
-            // --- Flipbook Rendering ---
-            function renderEbook(title, coverImage, pages) {
-                flipbookContainer.innerHTML = '';
-                currentStoryTitle = title;
+                
                 storyPagesData = pages;
-                totalPages = pages.length;
-                currentPage = 0;
+                renderEbook(story.titulo, coverImageData, pages);
 
-                // Create cover
-                const coverPage = document.createElement('div');
-                coverPage.className = 'fb-page';
-                coverPage.innerHTML = `
-                    <div class="fb-front flex flex-col items-center justify-center bg-gradient-to-b from-pink-200 to-pink-100 p-8">
-                        <img src="${coverImage}" alt="Portada" class="w-full h-64 object-cover rounded-lg mb-4">
-                        <h1 class="font-brand text-3xl font-bold text-center text-gray-800">${title}</h1>
-                    </div>
-                    <div class="fb-back flex items-center justify-center bg-white">
-                        <p class="text-gray-600 text-center">Siguiente →</p>
-                    </div>
-                `;
-                flipbookContainer.appendChild(coverPage);
-
-                // Create pages
-                pages.forEach((page, index) => {
-                    const pagePage = document.createElement('div');
-                    pagePage.className = 'fb-page';
-                    pagePage.innerHTML = `
-                        <div class="fb-front flex flex-col p-6 bg-white">
-                            <img src="${page.imageUrl}" alt="Página ${index + 1}" class="w-full h-48 object-cover rounded-lg mb-4">
-                            <p class="text-sm text-gray-700 flex-grow">${page.text}</p>
-                            <p class="text-xs text-gray-400 mt-2">Página ${index + 1}</p>
-                        </div>
-                        <div class="fb-back flex items-center justify-center bg-gray-50">
-                            <p class="text-gray-600 text-center">${index + 2 < pages.length ? 'Siguiente →' : 'Fin'}</p>
-                        </div>
-                    `;
-                    flipbookContainer.appendChild(pagePage);
-                });
-
-                // Add interactivity
-                document.querySelectorAll('.fb-page').forEach((page, index) => {
-                    page.addEventListener('click', () => {
-                        if (page.classList.contains('flipped')) {
-                            page.classList.remove('flipped');
-                        } else {
-                            page.classList.add('flipped');
-                        }
-                    });
-                });
-
-                // Show flipbook modal
-                flipbookModal.style.display = 'flex';
-
-                // Add action buttons
-                const actionButtons = document.createElement('div');
-                actionButtons.className = 'absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4 z-10';
-                actionButtons.innerHTML = `
-                    <button id="download-pdf-btn" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600">📥 Descargar PDF</button>
-                    <button id="print-order-btn" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600">🖨️ Pedir Impreso</button>
-                `;
-                flipbookContainer.parentElement.appendChild(actionButtons);
-
-                // Event listeners
-                document.getElementById('download-pdf-btn').addEventListener('click', downloadPDF);
-                document.getElementById('print-order-btn').addEventListener('click', () => printModal.style.display = 'flex');
-            }
-
-            async function downloadPDF() {
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF();
-                const pageWidth = pdf.internal.pageSize.getWidth();
-                const pageHeight = pdf.internal.pageSize.getHeight();
-
-                // Add cover
-                const coverImg = await loadImage(coverImageData);
-                pdf.addImage(coverImg, 'PNG', 10, 10, pageWidth - 20, 100);
-                pdf.setFontSize(24);
-                pdf.text(currentStoryTitle, 10, 120, { maxWidth: pageWidth - 20 });
-                pdf.addPage();
-
-                // Add pages
-                for (const page of storyPagesData) {
-                    const img = await loadImage(page.imageUrl);
-                    pdf.addImage(img, 'PNG', 10, 10, pageWidth - 20, 100);
-                    pdf.setFontSize(12);
-                    pdf.text(page.text, 10, 120, { maxWidth: pageWidth - 20, align: 'left' });
-                    pdf.addPage();
+                if (shouldSave && currentUser) {
+                    const storyToSave = {
+                        title: story.titulo,
+                        coverImage: coverImageData,
+                        pages: pages,
+                        formData: storyData,
+                        createdAt: new Date().toISOString()
+                    };
+                    saveStory(storyToSave);
+                    showToast('¡Tu cuento ha sido guardado!');
                 }
 
-                pdf.save(`${currentStoryTitle}.pdf`);
-                showToast('PDF descargado exitosamente.');
+            } catch (error) {
+                console.error("Error generating story:", error);
+                displayError(error.message || "No se pudo generar el cuento. Inténtalo de nuevo.");
+            } finally {
+                setLoading(false);
             }
+        }
 
-            function loadImage(src) {
-                return new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.onload = () => resolve(img);
-                    img.onerror = reject;
-                    img.src = src;
+        function setLoading(isLoading, message = '') {
+            generateBtn.disabled = isLoading;
+            document.getElementById('btn-text').style.display = isLoading ? 'none' : 'inline';
+            document.getElementById('btn-loader').style.display = isLoading ? 'inline-block' : 'none';
+            
+            if (isLoading) {
+                ebookPlaceholder.style.display = 'none';
+                ebookContent.style.display = 'none';
+                ebookContent.innerHTML = '';
+                loadingView.style.display = 'flex';
+                loadingMessage.textContent = message;
+            } else {
+                loadingView.style.display = 'none';
+                if (ebookContent.innerHTML !== '') {
+                    ebookContent.style.display = 'block';
+                } else {
+                    ebookPlaceholder.style.display = 'block';
+                }
+            }
+        }
+
+        function displayError(message) {
+            setLoading(false);
+            ebookPlaceholder.style.display = 'none';
+            ebookContent.innerHTML = `<div class="text-center text-red-500 bg-red-100 p-4 rounded-lg"><h3 class="font-bold">¡Oh no! Algo salió mal</h3><p class="text-sm mt-1">${message}</p></div>`;
+            ebookContent.style.display = 'block';
+        }
+
+        async function analyzePetImage(imageBase64Data) {
+            const prompt = "Analiza esta imagen. Primero, determina si contiene un animal doméstico. Responde ÚNICAMENTE con JSON. Si es mascota: {\"isPet\": true, \"description\": \"descripción detallada\"}. Si no: {\"isPet\": false}.";
+            const imageMimeType = imageBase64Data.split(';')[0].split(':')[1];
+            const pureBase64 = imageBase64Data.split(',')[1];
+            const payload = { contents: [{ role: "user", parts: [{ text: prompt }, { inlineData: { mimeType: imageMimeType, data: pureBase64 } }] }], generationConfig: { responseMimeType: "application/json" } };
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${googleAiApiKey}`;
+            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (!response.ok) throw new Error("Error al analizar la imagen");
+            const result = await response.json();
+            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            return JSON.parse(text);
+        }
+
+        async function generateStoryText(data) {
+            const prompt = `Crea un cuento infantil. - Personaje: ${data.character} (${data.character_desc}) - Lugar: ${data.setting} - Trama: ${data.plot} - Nivel: ${data.reading_level}. Responde SOLO con JSON válido con "titulo" y array "parrafos" de 8 párrafos.`;
+            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${googleAiApiKey}`;
+            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (!response.ok) throw new Error("Error en la API de texto");
+            const result = await response.json();
+            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            return JSON.parse(text);
+        }
+
+        function renderEbook(title, coverImage, pages) {
+            flipbookContainer.innerHTML = '';
+            storyPagesData = pages;
+            totalPages = pages.length;
+            currentPage = 0;
+
+            const coverPage = document.createElement('div');
+            coverPage.className = 'fb-page';
+            coverPage.innerHTML = `
+                <div class="fb-front flex flex-col items-center justify-center bg-gradient-to-b from-pink-200 to-pink-100 p-8">
+                    <img src="${coverImage}" alt="Portada" class="w-full h-64 object-cover rounded-lg mb-4">
+                    <h1 class="font-brand text-3xl font-bold text-center text-gray-800">${title}</h1>
+                </div>
+                <div class="fb-back flex items-center justify-center bg-white">
+                    <p class="text-gray-600 text-center">Siguiente →</p>
+                </div>
+            `;
+            flipbookContainer.appendChild(coverPage);
+
+            pages.forEach((page, index) => {
+                const pagePage = document.createElement('div');
+                pagePage.className = 'fb-page';
+                pagePage.innerHTML = `
+                    <div class="fb-front flex flex-col p-6 bg-white">
+                        <img src="${page.imageUrl}" alt="Página ${index + 1}" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <p class="text-sm text-gray-700 flex-grow">${page.text}</p>
+                        <p class="text-xs text-gray-400 mt-2">Página ${index + 1}</p>
+                    </div>
+                    <div class="fb-back flex items-center justify-center bg-gray-50">
+                        <p class="text-gray-600 text-center">${index + 2 < pages.length ? 'Siguiente →' : 'Fin'}</p>
+                    </div>
+                `;
+                flipbookContainer.appendChild(pagePage);
+            });
+
+            document.querySelectorAll('.fb-page').forEach((page) => {
+                page.addEventListener('click', () => {
+                    page.classList.toggle('flipped');
                 });
+            });
+
+            flipbookModal.style.display = 'flex';
+
+            const actionButtons = document.createElement('div');
+            actionButtons.className = 'absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4 z-10';
+            actionButtons.innerHTML = `
+                <button id="download-pdf-btn" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600">📥 Descargar PDF</button>
+                <button id="print-order-btn" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600">🖨️ Pedir Impreso</button>
+            `;
+            flipbookContainer.parentElement.appendChild(actionButtons);
+
+            document.getElementById('download-pdf-btn').addEventListener('click', downloadPDF);
+            document.getElementById('print-order-btn').addEventListener('click', () => printModal.style.display = 'flex');
+        }
+
+        async function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+
+            const coverImg = await loadImage(coverImageData);
+            pdf.addImage(coverImg, 'PNG', 10, 10, pageWidth - 20, 100);
+            pdf.setFontSize(24);
+            pdf.text(currentStoryTitle, 10, 120, { maxWidth: pageWidth - 20 });
+            pdf.addPage();
+
+            for (const page of storyPagesData) {
+                const img = await loadImage(page.imageUrl);
+                pdf.addImage(img, 'PNG', 10, 10, pageWidth - 20, 100);
+                pdf.setFontSize(12);
+                pdf.text(page.text, 10, 120, { maxWidth: pageWidth - 20, align: 'left' });
+                pdf.addPage();
             }
 
-            async function handlePlotSuggestion() {
-                const character = document.getElementById('character').value || 'un personaje';
-                const setting = document.getElementById('setting').value || 'un lugar mágico';
-                const suggestions = [
-                    `${character} descubre un secreto misterioso en ${setting}`,
-                    `${character} necesita ayuda para salvar ${setting}`,
-                    `${character} encuentra un tesoro escondido en ${setting}`,
-                    `${character} hace un nuevo amigo en ${setting}`,
-                    `${character} aprende una lección importante en ${setting}`
-                ];
-                const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
-                plotInput.value = randomSuggestion;
-                showToast('Trama sugerida: ' + randomSuggestion);
-            }
+            pdf.save(`${currentStoryTitle}.pdf`);
+            showToast('PDF descargado exitosamente.');
+        }
 
-            function readFileAsBase64(file) {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                });
+        function loadImage(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = src;
+            });
+        }
+
+        function readFileAsBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function saveStory(storyData) {
+            if (!currentUser) return;
+            const allStories = JSON.parse(localStorage.getItem('petstories_stories')) || {};
+            if (!allStories[currentUser.email]) {
+                allStories[currentUser.email] = [];
             }
-        });
+            allStories[currentUser.email].push(storyData);
+            localStorage.setItem('petstories_stories', JSON.stringify(allStories));
+            loadUserStories();
+        }
+
+        function loadUserStories() {
+            if (!currentUser) return;
+            const allStories = JSON.parse(localStorage.getItem('petstories_stories')) || {};
+            const userStories = allStories[currentUser.email] || [];
+            renderSavedStories(userStories);
+        }
+
+        function renderSavedStories(userStories) {
+            if (userStories.length === 0) {
+                savedStoriesGrid.innerHTML = '<p class="text-gray-500 col-span-full">Aún no has creado ningún cuento. ¡Anímate a crear el primero!</p>';
+            } else {
+                savedStoriesGrid.innerHTML = '';
+                userStories.forEach((storyData, index) => createStoryCard(index, storyData));
+            }
+            savedStoriesSection.classList.remove('hidden');
+        }
+
+        function createStoryCard(storyId, storyData) {
+            const card = document.createElement('a');
+            card.href = '#crear-cuento';
+            card.className = "bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform hover:scale-105 transition-transform flex flex-col";
+            card.innerHTML = `
+                <img src="${storyData.coverImage}" alt="Portada" class="w-full h-48 object-cover" onerror="this.src='https://placehold.co/600x400/cccccc/333333?text=🐾'">
+                <div class="p-6 flex-grow flex flex-col">
+                    <h3 class="font-brand text-2xl font-bold">${storyData.title}</h3>
+                </div>`;
+            card.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('crear-cuento').scrollIntoView({ behavior: 'smooth' });
+                renderEbook(storyData.title, storyData.coverImage, storyData.pages);
+            });
+            savedStoriesGrid.appendChild(card);
+        }
+
+        function clearUserStories() {
+            savedStoriesSection.classList.add('hidden');
+            savedStoriesGrid.innerHTML = '';
+        }
+
+        function handleClearStories() {
+            if (confirm('¿Seguro que deseas eliminar todos tus cuentos guardados?')) {
+                localStorage.removeItem('petstories_stories');
+                clearUserStories();
+                showToast('Se han eliminado todos los cuentos guardados.');
+            }
+        }
+
+        // === INIT ===
+        if (!googleAiApiKey || googleAiApiKey.includes("REEMPLAZA")) {
+            document.body.innerHTML = `<div class="h-screen flex items-center justify-center bg-red-100"><div class="text-center text-red-700"><h3 class="font-bold text-3xl">Error de Configuración</h3><p class="mt-4">Falta configurar tu API Key de Google AI.</p></div></div>`;
+            return;
+        }
+
+        initGoogleSignIn();
+        checkSession();
     </script>
 </body>
 </html>
