@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <script src="config.js"></script>
+<script src="hugging-face-config.js"></script>
+<script src="image-generator.js"></script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,7 +27,7 @@
         }
 
         .hero-bg {
-            background-image: linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 50%), url('https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=2874&auto=format&fit=crop');
+            background-image: linear-gradient(to top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 50%), url('https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=2874&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8ZW58MHx8fHx8fA%3D%3D');
             background-size: cover;
             background-position: center 75%;
         }
@@ -138,7 +140,6 @@
             transform: translate(-50%, -10px);
         }
     </style>
-    <script src="config.js"></script>
 </head>
 
 <body class="bg-gray-50 text-gray-800">
@@ -271,10 +272,10 @@
                                 <option value="para adolescentes de 13+ años">Adolescente (13+ años)</option>
                             </select></div>
                         <button type="submit" id="generate-btn"
-                            class="w-full bg-pink-500 text-white font-bold py-3 px-4 rounded-md hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-transform transform hover:scale-105 flex items-center justify-center shadow-lg">
+                            class="w-full bg-pink-500 text-white font-bold py-3 px-4 rounded-md hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-all flex items-center justify-center">
                             <span id="btn-text">Generar Mi Cuento</span>
                             <svg id="btn-loader"
-                                class="animate-spin h-5 w-5 text-white hidden"
+                                class="animate-spin h-5 w-5 text-white hidden ml-2"
                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                                     stroke-width="4"></circle>
@@ -472,9 +473,9 @@
             let isRegisterMode = true; // Start in register mode 
 
             const exampleStories = {
-                'example-lara': { character: 'Lara', character_desc: 'Una perrita golden retriever, joven y aventurera, con un pelaje dorado brillante y una bandana roja en el cuello.', setting: 'Un jardín trasero que esconde secretos antiguos y caminos inexplorados.', plot: 'Lara descubre un mapa misterioso enterrado bajo su rosal favorito. El mapa la guía en una emocionante búsqueda del legendario Tesoro Perdido de los Ladridos, enfrentándose a ardillas astutas y topos gruñones en el camino.', style: 'estilo acuarela digital', reading_level: 'para niños de 7 a 12 años', visual_modifier: 'variado' },
-                'example-max': { character: 'Max', character_desc: 'Un gato negro y sigiloso con brillantes ojos verdes y un collar con un pequeño cascabel que nunca suena.', setting: 'La luna, hecha de queso suizo, con cráteres llenos de leche y estrellas que son bolas de estambre.', plot: 'Aburrido de los juguetes terrestres, el gato Max construye un cohete con una caja de cartón y viaja a la luna. Allí, se hace amigo de los amistosos ratones lunares, que le enseñan a rebotar en la baja gravedad y a surfear en los ríos de leche.', style: 'estilo de dibujos animados alegres', reading_level: 'para niños de 3 a 6 años', visual_modifier: 'variado' },
-                'example-rocky': { character: 'Rocky', character_desc: 'Un pequeño y regordete hamster de color marrón y blanco, con grandes mofletes y un sombrero de detective de papel.', setting: 'Una compleja ciudad de tubos de plástico y túneles dentro de una jaula, con una rueda de ejercicio como el centro de la ciudad.', plot: '¡Ha desaparecido la galleta más grande y deliciosa de la jaula! El astuto detective Rocky, sigue un rastro de migas y pistas para interrogar a los otros habitantes de la jaula y resolver el caso más sabroso de su carrera.', style: 'estilo libro de cuentos clásico', reading_level: 'para niños de 7 a 12 años', visual_modifier: 'variado' }
+                'example-lara': { character: 'Lara', character_desc: 'Una perrita golden retriever, joven y aventurera, con un pelaje dorado brillante y una bandana roja en el cuello.', setting: 'Un bosque mágico', plot: 'Lara descubre un mapa misterioso y se embarca en la búsqueda de un tesoro escondido', style: 'estilo libro de cuentos clásico', visual_modifier: 'variado', reading_level: 'para niños de 7 a 12 años' },
+                'example-max': { character: 'Max', character_desc: 'Un gato negro y sigiloso con brillantes ojos verdes y un collar con un pequeño cascabel que nunca suena.', setting: 'La luna, una estación espacial futurista', plot: 'Max construye un cohete de cartón y viaja a la luna, donde descubre una colonia de ratones lunares', style: 'estilo de dibujos animados alegres', visual_modifier: 'variado', reading_level: 'para niños de 3 a 6 años' },
+                'example-rocky': { character: 'Rocky', character_desc: 'Un pequeño y regordete hamster de color marrón y blanco, con grandes mofletes y un sombrero de detective de papel.', setting: 'Una casa acogedora y sus alrededores', plot: 'El misterio de la galleta desaparecida. Rocky debe usar su astucia para resolver el caso', style: 'arte de fantasía encantado', visual_modifier: 'planos cercanos', reading_level: 'para niños de 3 a 6 años' }
             };
 
             // --- Initialization ---
@@ -853,11 +854,11 @@
                     currentStoryTitle = story.titulo;
 
                     setLoading(true, "Creando portada...");
-                    const coverPrompt = `Crea una portada de libro infantil artística y llamativa. El título es "${story.titulo}". El personaje principal es ${storyData.character}, que es ${storyData.character_desc}. Estilo: ${storyData.style}. Sin texto.`;
-                    coverImageData = await generateImage(coverPrompt);
+                    const coverPrompt = window.imageGenerator.generateCoverPrompt(story.titulo, storyData.character_desc, storyData.character, storyData.style);
+                    coverImageData = await window.imageGenerator.generateImage(coverPrompt);
 
                     const visualModifiers = {
-                        'variado': ['plano general amplio', 'primer plano emocional del personaje', 'toma de acción dinámica', 'vista desde un ángulo bajo', 'vista desde arriba', 'iluminación suave y cálida', 'silueta contra el atardecer', 'plano medio del personaje interactuando'],
+                        'variado': ['plano general amplio', 'primer plano emocional del personaje', 'toma de acción dinámica', 'vista desde un ángulo bajo', 'vista desde arriba', 'iluminación dramática'],
                         'planos cercanos': ['primer plano del personaje', 'plano medio mostrando la expresión', 'detalle de las patas del personaje', 'mirada por encima del hombro'],
                         'planos generales': ['plano general muy amplio mostrando el paisaje', 'vista panorámica', 'el personaje es pequeño en la escena', 'vista de pájaro']
                     };
@@ -868,8 +869,8 @@
                         setLoading(true, `Creando ilustraciones... (${i + 1}/${story.parrafos.length})`);
                         const paragraph = story.parrafos[i];
                         const randomModifier = selectedModifierSet[Math.floor(Math.random() * selectedModifierSet.length)];
-                        const imagePrompt = `Ilustración para un libro de cuentos (${storyData.reading_level}) con un ${storyData.style}. El personaje principal es ${storyData.character}, que es ${storyData.character_desc}. La escena describe: "${paragraph}". Estilo visual: ${randomModifier}. Personaje consistente, sin texto.`;
-                        const imageUrl = await generateImage(imagePrompt);
+                        const imagePrompt = window.imageGenerator.generatePagePrompt(storyData.character_desc, storyData.character, paragraph, storyData.style, randomModifier, i, story.parrafos.length);
+                        const imageUrl = await window.imageGenerator.generateImage(imagePrompt);
                         pages.push({ text: paragraph, imageUrl: imageUrl });
                     }
                     
@@ -931,7 +932,7 @@
             // --- API Call Functions ---
 
             async function analyzePetImage(imageBase64Data) {
-                const prompt = "Analiza esta imagen. Primero, determina si contiene un animal doméstico (como un perro, gato, conejo, etc.). Responde ÚNICAMENTE con un objeto JSON válido. Si es una mascota, el JSON debe tener la forma `{\"isPet\": true, \"description\": \"Descripción detallada...\"}`. Si no es una mascota, el JSON debe ser `{\"isPet\": false, \"description\": \"\"}`. La descripción debe ser detallada, incluyendo especie, raza, colores, patrones y rasgos distintivos para que un ilustrador pueda dibujarlo consistentemente.";
+                const prompt = "Analiza esta imagen. Primero, determina si contiene un animal doméstico (como un perro, gato, conejo, etc.). Responde ÚNICAMENTE con un objeto JSON válido. Si es un animal doméstico, devuelve {\"isPet\": true, \"description\": \"una descripción detallada de su apariencia física, incluyendo raza si es identificable, colores, características únicas, etc.\"}. Si NO es un animal doméstico, devuelve {\"isPet\": false}.";
                 const imageMimeType = imageBase64Data.split(';')[0].split(':')[1];
                 const pureBase64 = imageBase64Data.split(',')[1];
                 const payload = { contents: [{ role: "user", parts: [{ text: prompt }, { inlineData: { mimeType: imageMimeType, data: pureBase64 } }] }], generationConfig: { responseMimeType: "application/json" } };
@@ -959,7 +960,7 @@
                     - Lugar: ${data.setting}
                     - Trama: ${data.plot}
                     - Complejidad: ${data.reading_level}
-                    Responde ÚNICAMENTE con un objeto JSON válido. El objeto debe contener un "titulo" y un array llamado "parrafos" con exactamente 8 párrafos de texto. Cada párrafo debe ser sustancioso para que la historia sea interesante.`;
+                    Responde ÚNICAMENTE con un objeto JSON válido. El objeto debe contener un "titulo" y un array llamado "parrafos" con exactamente 8 párrafos de texto. Cada párrafo debe ser descriptivo y adecuado para un libro ilustrado infantil.`;
                 const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } };
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${googleAiApiKey}`;
                 const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -986,329 +987,132 @@
                 throw new Error("No se pudo generar el texto del cuento. Respuesta de la API vacía.");
             }
 
-            async function generateImage(prompt) {
-                const payload = { instances: [{ prompt }], parameters: { "sampleCount": 1 } };
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${googleAiApiKey}`;
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (!response.ok) {
-                    const errorMessage = await handleApiError(response);
-                    throw new Error(`Error en la API de imagen: ${errorMessage}`);
-                }
-                const result = await response.json();
-                if (result.predictions && result.predictions[0]?.bytesBase64Encoded) {
-                    return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
-                }
-                throw new Error("No se pudo generar la ilustración.");
-            }
-            
-            async function handlePlotSuggestion() {
-                const characterName = document.getElementById('character').value;
-                const characterDesc = document.getElementById('character_desc').value;
-                const setting = document.getElementById('setting').value;
-                const readingLevel = document.getElementById('reading_level').value;
+            // --- Flipbook Rendering ---
+            function renderEbook(title, coverImage, pages) {
+                flipbookContainer.innerHTML = '';
+                currentStoryTitle = title;
+                storyPagesData = pages;
+                totalPages = pages.length;
+                currentPage = 0;
 
-                if (!characterName || !setting) {
-                    showToast("Por favor, define primero el personaje y el lugar.");
-                    return;
-                }
-
-                plotSuggestionsContainer.innerHTML = `<div class="flex items-center justify-center"><div class="loader-small !border-purple-700 !border-t-transparent"></div><span class="text-purple-700 text-sm">Buscando ideas...</span></div>`;
-                suggestPlotBtn.disabled = true;
-
-                try {
-                    const prompt = `Basado en el personaje "${characterName}" que es ${characterDesc}, en el mundo de "${setting}" y para un nivel de lectura ${readingLevel}, genera 3 ideas cortas y emocionantes para una trama de cuento. Responde ÚNICAMENTE con un objeto JSON que contenga un array de strings llamado "tramas". Ejemplo: {"tramas": ["Idea 1", "Idea 2", "Idea 3"]}`;
-                    const payload = {
-                        contents: [{ role: "user", parts: [{ text: prompt }] }],
-                        generationConfig: { responseMimeType: "application/json" }
-                    };
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${googleAiApiKey}`;
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-
-                    if (!response.ok) {
-                        const errorMsg = await handleApiError(response);
-                        throw new Error(`Error al sugerir tramas: ${errorMsg}`);
-                    }
-
-                    const result = await response.json();
-                    const suggestions = extractAndParseJson(result.candidates[0].content.parts[0].text);
-
-                    plotSuggestionsContainer.innerHTML = '';
-                    if (suggestions.tramas && suggestions.tramas.length > 0) {
-                        suggestions.tramas.forEach(suggestion => {
-                            const button = document.createElement('button');
-                            button.type = 'button';
-                            button.textContent = suggestion;
-                            button.className = "w-full text-left p-2 bg-purple-50 hover:bg-purple-100 rounded-md text-sm text-purple-800 transition-colors";
-                            button.onclick = () => {
-                                plotInput.value = suggestion;
-                                plotSuggestionsContainer.innerHTML = '';
-                            };
-                            plotSuggestionsContainer.appendChild(button);
-                        });
-                    }
-
-                } catch(error) {
-                    console.error("Error suggesting plot:", error);
-                    plotSuggestionsContainer.innerHTML = `<p class="text-red-500 text-sm">No se pudieron generar sugerencias. ${error.message}</p>`;
-                } finally {
-                    suggestPlotBtn.disabled = false;
-                }
-            }
-            
-            // --- Ebook Rendering and Export ---
-
-            function renderEbook(title, coverImage, pagesData) {
-                let bookHtml = '';
-                
-                // Cover
-                bookHtml += `<div id="page-0" class="page active grid grid-cols-1 bg-gradient-to-br from-indigo-400 via-purple-500 to-pink-500 p-8 rounded-lg overflow-hidden relative shadow-2xl">
-                    <div class="absolute inset-0 bg-black/20"></div>
-                    <div class="relative z-10 flex flex-col items-center justify-center h-full text-center">
-                        <div class="bg-white/95 backdrop-blur-lg rounded-3xl p-6 md:p-10 shadow-2xl max-w-lg border border-white/20">
-                            <div class="w-32 h-32 md:w-40 md:h-40 mx-auto rounded-2xl bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-white shadow-xl mb-6">
-                                <img src="${coverImage}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/200x200/cccccc/333333?text=🐾'">
-                            </div>
-                            <h1 class="font-brand text-4xl md:text-5xl font-black text-gray-800 mb-4 leading-tight bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">${title}</h1>
-                            <p class="text-purple-700 font-semibold text-lg">✨ Un Cuento Mágico ✨</p>
-                        </div>
+                // Create cover
+                const coverPage = document.createElement('div');
+                coverPage.className = 'fb-page';
+                coverPage.innerHTML = `
+                    <div class="fb-front flex flex-col items-center justify-center bg-gradient-to-b from-pink-200 to-pink-100 p-8">
+                        <img src="${coverImage}" alt="Portada" class="w-full h-64 object-cover rounded-lg mb-4">
+                        <h1 class="font-brand text-3xl font-bold text-center text-gray-800">${title}</h1>
                     </div>
-                </div>`;
+                    <div class="fb-back flex items-center justify-center bg-white">
+                        <p class="text-gray-600 text-center">Siguiente →</p>
+                    </div>
+                `;
+                flipbookContainer.appendChild(coverPage);
 
-                // Content Pages
-                pagesData.forEach((page, index) => {
-                    const sanitizedText = escapeHtml(page.text);
-                    bookHtml += `<div id="page-${index + 1}" class="page grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg border">
-                        <div class="flex items-center justify-center bg-gray-100 rounded-md overflow-hidden border">
-                           <img src="${page.imageUrl}" alt="Ilustración para el cuento" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x400/e0e7ff/3730a3?text=🎨'">
+                // Create pages
+                pages.forEach((page, index) => {
+                    const pagePage = document.createElement('div');
+                    pagePage.className = 'fb-page';
+                    pagePage.innerHTML = `
+                        <div class="fb-front flex flex-col p-6 bg-white">
+                            <img src="${page.imageUrl}" alt="Página ${index + 1}" class="w-full h-48 object-cover rounded-lg mb-4">
+                            <p class="text-sm text-gray-700 flex-grow">${page.text}</p>
+                            <p class="text-xs text-gray-400 mt-2">Página ${index + 1}</p>
                         </div>
-                        <div class="flex items-center p-4 md:p-6 bg-gray-50 rounded-md border">
-                            <p class="text-gray-700 leading-relaxed text-base md:text-lg">${sanitizedText}</p>
+                        <div class="fb-back flex items-center justify-center bg-gray-50">
+                            <p class="text-gray-600 text-center">${index + 2 < pages.length ? 'Siguiente →' : 'Fin'}</p>
                         </div>
-                    </div>`;
+                    `;
+                    flipbookContainer.appendChild(pagePage);
                 });
 
-                // Back Cover
-                bookHtml += `<div id="page-${pagesData.length + 1}" class="page grid grid-cols-1 bg-gradient-to-br from-emerald-400 to-cyan-600 p-8 rounded-lg shadow-2xl">
-                    <div class="flex flex-col items-center justify-center h-full text-center text-white">
-                         <div class="bg-white/95 backdrop-blur-lg rounded-3xl p-10 shadow-2xl max-w-lg border border-white/30">
-                            <div class="text-8xl mb-4">🏆</div>
-                            <h2 class="font-brand text-5xl font-black text-transparent bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text mb-6">¡Fin!</h2>
-                            <p class="text-emerald-700 leading-relaxed text-base">Esperamos que hayas disfrutado la aventura.</p>
-                         </div>
-                    </div>
-                </div>`;
-
-                ebookContent.innerHTML = bookHtml;
-                totalPages = pagesData.length + 2;
-                currentPage = 0;
-                updatePage();
-                
-                const controlsHtml = `
-                    <div class="mt-4 flex justify-between items-center w-full max-w-md mx-auto">
-                        <button id="prev-btn" class="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition">←</button>
-                        <span id="page-indicator" class="text-sm font-semibold text-gray-600"></span>
-                        <button id="next-btn" class="px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition">→</button>
-                    </div>
-                    <div id="action-buttons" class="mt-6 text-center flex flex-wrap justify-center gap-4">
-                        <button id="open-flipbook-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-700 transition">📖 Ver como Flipbook</button>
-                        <button id="download-pdf-btn" class="bg-green-600 text-white font-bold py-2 px-6 rounded-full hover:bg-green-700 transition">📄 Descargar PDF</button>
-                        <button id="open-print-modal-btn" class="bg-purple-600 text-white font-bold py-2 px-6 rounded-full hover:bg-purple-700 transition">📚 ¡Imprímelo!</button>
-                    </div>`;
-
-                ebookContainer.insertAdjacentHTML('beforeend', controlsHtml);
-                
-                document.getElementById('prev-btn').addEventListener('click', prevPage);
-                document.getElementById('next-btn').addEventListener('click', nextPage);
-                document.getElementById('open-flipbook-btn').addEventListener('click', () => openFlipbook(title));
-                document.getElementById('download-pdf-btn').addEventListener('click', () => downloadPDF(title));
-                document.getElementById('open-print-modal-btn').addEventListener('click', () => document.getElementById('print-order-modal').style.display = 'flex');
-            }
-
-            function updatePage() {
-                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                const currentPageElement = document.getElementById(`page-${currentPage}`);
-                if (currentPageElement) { currentPageElement.classList.add('active'); }
-                
-                const prevBtn = document.getElementById('prev-btn');
-                const nextBtn = document.getElementById('next-btn');
-                if(prevBtn) prevBtn.disabled = currentPage === 0;
-                if(nextBtn) nextBtn.disabled = currentPage >= totalPages - 1;
-                
-                const pageIndicator = document.getElementById('page-indicator');
-                if(pageIndicator) {
-                    if (currentPage === 0) { pageIndicator.textContent = 'Portada'; }
-                    else if (currentPage === totalPages - 1) { pageIndicator.textContent = 'Contraportada'; }
-                    else { pageIndicator.textContent = `Página ${currentPage} de ${totalPages - 2}`; }
-                }
-            }
-
-            function prevPage() { if (currentPage > 0) { currentPage--; updatePage(); } }
-            function nextPage() { if (currentPage < totalPages - 1) { currentPage++; updatePage(); } }
-
-            function openFlipbook(title) {
-                flipbookContainer.innerHTML = '';
-                
-                const cover = document.createElement('div');
-                cover.className = 'absolute w-1/2 h-full top-0 left-0 bg-pink-500 text-white p-8 rounded-l-lg flex items-center justify-center';
-                cover.innerHTML = `<div class="text-center"><h3 class="font-brand text-4xl">${title}</h3><p class="mt-4 opacity-80">Un cuento generado por IA</p></div>`;
-                flipbookContainer.appendChild(cover);
-
-                let zIndex = storyPagesData.length;
-                for (let i = 0; i < storyPagesData.length; i += 2) {
-                    const fbPage = document.createElement('div');
-                    fbPage.className = 'fb-page';
-                    fbPage.style.zIndex = zIndex--;
-
-                    const front = document.createElement('div');
-                    front.className = 'fb-front p-4 border rounded-r-lg';
-                    front.innerHTML = `<div class="w-full h-full flex flex-col gap-4">
-                        <div class="flex-1 bg-gray-100 rounded overflow-hidden"><img src="${storyPagesData[i].imageUrl}" class="w-full h-full object-cover"></div>
-                        <p class="text-gray-700 text-sm leading-snug h-1/3 overflow-y-auto p-2">${storyPagesData[i].text}</p>
-                    </div>`;
-                    
-                    const back = document.createElement('div');
-                    back.className = 'fb-back p-4 border rounded-l-lg';
-                    if (storyPagesData[i+1]) {
-                         back.innerHTML = `<div class="w-full h-full flex flex-col gap-4">
-                            <div class="flex-1 bg-gray-100 rounded overflow-hidden"><img src="${storyPagesData[i+1].imageUrl}" class="w-full h-full object-cover"></div>
-                            <p class="text-gray-700 text-sm leading-snug h-1/3 overflow-y-auto p-2">${storyPagesData[i+1].text}</p>
-                        </div>`;
-                    } else {
-                        back.innerHTML = `<div class="w-full h-full flex items-center justify-center"><p>Fin</p></div>`;
-                    }
-
-                    fbPage.appendChild(front);
-                    fbPage.appendChild(back);
-                    flipbookContainer.appendChild(fbPage);
-                    fbPage.addEventListener('click', () => {
-                        fbPage.classList.toggle('flipped');
+                // Add interactivity
+                document.querySelectorAll('.fb-page').forEach((page, index) => {
+                    page.addEventListener('click', () => {
+                        if (page.classList.contains('flipped')) {
+                            page.classList.remove('flipped');
+                        } else {
+                            page.classList.add('flipped');
+                        }
                     });
-                }
+                });
+
+                // Show flipbook modal
                 flipbookModal.style.display = 'flex';
+
+                // Add action buttons
+                const actionButtons = document.createElement('div');
+                actionButtons.className = 'absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4 z-10';
+                actionButtons.innerHTML = `
+                    <button id="download-pdf-btn" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600">📥 Descargar PDF</button>
+                    <button id="print-order-btn" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600">🖨️ Pedir Impreso</button>
+                `;
+                flipbookContainer.parentElement.appendChild(actionButtons);
+
+                // Event listeners
+                document.getElementById('download-pdf-btn').addEventListener('click', downloadPDF);
+                document.getElementById('print-order-btn').addEventListener('click', () => printModal.style.display = 'flex');
             }
 
-            async function downloadPDF(title) {
-                const downloadBtn = document.getElementById('download-pdf-btn');
-                if (!downloadBtn || downloadBtn.disabled) return;
-
-                const originalBtnContent = downloadBtn.innerHTML;
-                downloadBtn.disabled = true;
-                downloadBtn.innerHTML = `<span class="loader-small"></span>Creando PDF...`;
-
+            async function downloadPDF() {
                 const { jsPDF } = window.jspdf;
-                const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+                const pdf = new jsPDF();
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
 
-                try {
-                    // --- Cover Page ---
-                    showToast('Creando portada...');
-                    doc.setFillColor(236, 72, 153); // Pink
-                    doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
-                    if (coverImageData) {
-                         try {
-                            const img = new Image();
-                            img.crossOrigin = "anonymous";
-                            const imgPromise = new Promise((resolve, reject) => {
-                                img.onload = resolve;
-                                img.onerror = reject;
-                            });
-                            img.src = coverImageData;
-                            await imgPromise;
-                            doc.addImage(img, 'PNG', doc.internal.pageSize.width / 2 - 100, 150, 200, 200);
-                        } catch (e) {
-                            console.error("Error loading cover image for PDF:", e);
-                            doc.text('🐾', doc.internal.pageSize.width / 2, 250, { align: 'center' });
-                        }
-                    }
-                    doc.setFont('Helvetica', 'bold');
-                    doc.setFontSize(40);
-                    doc.setTextColor(255, 255, 255);
-                    doc.text(title, doc.internal.pageSize.width / 2, 100, { align: 'center' });
-                    doc.setFontSize(20);
-                    doc.text('Un Cuento Mágico', doc.internal.pageSize.width / 2, 400, { align: 'center' });
+                // Add cover
+                const coverImg = await loadImage(coverImageData);
+                pdf.addImage(coverImg, 'PNG', 10, 10, pageWidth - 20, 100);
+                pdf.setFontSize(24);
+                pdf.text(currentStoryTitle, 10, 120, { maxWidth: pageWidth - 20 });
+                pdf.addPage();
 
-
-                    // --- Content Pages ---
-                    for (let i = 0; i < storyPagesData.length; i++) {
-                        showToast(`Procesando página ${i + 1} de ${storyPagesData.length}...`);
-                        doc.addPage();
-                        const page = storyPagesData[i];
-                        const pageXMargin = 40;
-                        const pageYMargin = 40;
-                        const imageWidth = doc.internal.pageSize.width - pageXMargin * 2;
-                        const imageHeight = doc.internal.pageSize.height * 0.45;
-                        
-                        // Add Image
-                        if (page.imageUrl) {
-                            try {
-                                const img = new Image();
-                                img.crossOrigin = "anonymous";
-                                const imgPromise = new Promise((resolve, reject) => {
-                                    img.onload = resolve;
-                                    img.onerror = reject;
-                                });
-                                img.src = page.imageUrl;
-                                await imgPromise;
-                                doc.addImage(img, 'PNG', pageXMargin, pageYMargin, imageWidth, imageHeight);
-                            } catch (e) {
-                                console.error(`Error loading image for page ${i+1}:`, e);
-                                doc.setFillColor(243, 244, 246);
-                                doc.rect(pageXMargin, pageYMargin, imageWidth, imageHeight, 'F');
-                                doc.setTextColor(156, 163, 175);
-                                doc.text('🎨', pageXMargin + imageWidth / 2, pageYMargin + imageHeight / 2, { align: 'center' });
-                            }
-                        }
-
-                        // Add Text
-                        doc.setFont('Times', 'normal');
-                        doc.setFontSize(14);
-                        doc.setTextColor(0, 0, 0);
-                        const textX = pageXMargin;
-                        const textWidth = doc.internal.pageSize.width - pageXMargin * 2;
-                        const textY = pageYMargin + imageHeight + 20;
-                        const textLines = doc.splitTextToSize(page.text, textWidth);
-                        doc.text(textLines, textX, textY);
-                    }
-
-                    // --- Back Cover ---
-                    doc.addPage();
-                    doc.setFillColor(34, 197, 94); // Green
-                    doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
-                    doc.setFont('Helvetica', 'bold');
-                    doc.setFontSize(60);
-                    doc.setTextColor(255, 255, 255);
-                    doc.text('¡Fin!', doc.internal.pageSize.width / 2, doc.internal.pageSize.height / 2, { align: 'center' });
-
-                    // --- Save ---
-                    const cleanTitle = title.replace(/[^a-zA-Z0-9]/g, '_');
-                    doc.save(`${cleanTitle}.pdf`);
-                    showToast("¡PDF descargado exitosamente!");
-
-                } catch (error) {
-                    console.error("Error creating PDF:", error);
-                    displayError("No se pudo crear el PDF. " + (error.message || "Error desconocido. Revisa la consola."));
-                } finally {
-                    downloadBtn.disabled = false;
-                    downloadBtn.innerHTML = `📄 Descargar PDF`;
+                // Add pages
+                for (const page of storyPagesData) {
+                    const img = await loadImage(page.imageUrl);
+                    pdf.addImage(img, 'PNG', 10, 10, pageWidth - 20, 100);
+                    pdf.setFontSize(12);
+                    pdf.text(page.text, 10, 120, { maxWidth: pageWidth - 20, align: 'left' });
+                    pdf.addPage();
                 }
+
+                pdf.save(`${currentStoryTitle}.pdf`);
+                showToast('PDF descargado exitosamente.');
             }
 
-            // --- Utility Functions ---
-            function escapeHtml(str) {
-                const div = document.createElement('div');
-                div.textContent = str;
-                return div.innerHTML;
+            function loadImage(src) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = reject;
+                    img.src = src;
+                });
+            }
+
+            async function handlePlotSuggestion() {
+                const character = document.getElementById('character').value || 'un personaje';
+                const setting = document.getElementById('setting').value || 'un lugar mágico';
+                const suggestions = [
+                    `${character} descubre un secreto misterioso en ${setting}`,
+                    `${character} necesita ayuda para salvar ${setting}`,
+                    `${character} encuentra un tesoro escondido en ${setting}`,
+                    `${character} hace un nuevo amigo en ${setting}`,
+                    `${character} aprende una lección importante en ${setting}`
+                ];
+                const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
+                plotInput.value = randomSuggestion;
+                showToast('Trama sugerida: ' + randomSuggestion);
             }
 
             function readFileAsBase64(file) {
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onload = () => resolve(reader.result);
-                    reader.onerror = (error) => reject(error);
+                    reader.onerror = reject;
                     reader.readAsDataURL(file);
                 });
             }
         });
     </script>
 </body>
-
 </html>
