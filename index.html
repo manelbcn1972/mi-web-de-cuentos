@@ -891,11 +891,10 @@
         // === INIT ===
         if (!googleAiApiKey || googleAiApiKey.includes("REEMPLAZA")) {
             document.body.innerHTML = `<div class="h-screen flex items-center justify-center bg-red-100"><div class="text-center text-red-700"><h3 class="font-bold text-3xl">Error de Configuración</h3><p class="mt-4">Falta configurar tu API Key de Google AI.</p></div></div>`;
-            return;
+        } else {
+            initGoogleSignIn();
+            checkSession();
         }
-
-        initGoogleSignIn();
-        checkSession();
     </script>
 </body>
 </html>
