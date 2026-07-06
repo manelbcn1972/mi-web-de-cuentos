@@ -22,33 +22,23 @@ async function generateImageWithHuggingFace(prompt) {
   }
 
   // 2️⃣ VERIFICAR CONFIGURACIÓN
-  const apiKey = window.huggingFaceConfig.apiKey;
-  if (!apiKey || apiKey.includes('YOUR_TOKEN')) {
+  const proxyUrl = window.huggingFaceConfig.proxyUrl;
+  const anonKey = window.huggingFaceConfig.supabaseAnonKey;
+  if (!proxyUrl || !anonKey) {
     throw new Error(
-      '❌ Token de Hugging Face no configurado.\n\n' +
-      '📋 INSTRUCCIONES:\n' +
-      '1. Ve a https://huggingface.co/settings/tokens\n' +
-      '2. Crea un nuevo token (hazlo PRIVADO)\n' +
-      '3. Abre hugging-face-config.js\n' +
-      '4. Reemplaza "hf_YOUR_TOKEN_HERE" con tu token\n' +
-      '5. ¡Listo! Vuelve a intentar'
+      '❌ Proxy de generación de imágenes no configurado.\n' +
+      'Revisa hugging-face-config.js (proxyUrl / supabaseAnonKey).'
     );
   }
 
-  // 3️⃣ PREPARAR PETICIÓN
-  const modelUrl = window.huggingFaceConfig.modelUrl;
-  const payload = {
-    inputs: prompt,
-    parameters: {
-      negative_prompt: 'blurry, low quality, distorted',
-    }
-  };
+  // 3️⃣ PREPARAR PETICIÓN (el token de Hugging Face vive en el servidor)
+  const payload = { prompt };
 
   try {
-    // 4️⃣ LLAMAR A HUGGING FACE API
-    const response = await fetch(modelUrl, {
+    // 4️⃣ LLAMAR AL PROXY (Supabase Edge Function)
+    const response = await fetch(proxyUrl, {
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${anonKey}`,
         'Content-Type': 'application/json',
       },
       method: 'POST',
@@ -188,19 +178,16 @@ function extractMainAction(paragraph) {
  * Validar que el token esté configurado
  */
 function validateHuggingFaceSetup() {
-  const apiKey = window.huggingFaceConfig?.apiKey;
-  
-  if (!apiKey) {
-    throw new Error('❌ Hugging Face no configurado');
-  }
-  
-  if (apiKey.includes('YOUR_TOKEN') || apiKey.includes('REEMPLAZA')) {
+  const proxyUrl = window.huggingFaceConfig?.proxyUrl;
+  const anonKey = window.huggingFaceConfig?.supabaseAnonKey;
+
+  if (!proxyUrl || !anonKey) {
     throw new Error(
-      '⚠️ Token de Hugging Face no configurado.\n' +
-      'Por favor, actualiza hugging-face-config.js con tu token.'
+      '⚠️ Proxy de generación de imágenes no configurado.\n' +
+      'Revisa proxyUrl / supabaseAnonKey en hugging-face-config.js.'
     );
   }
-  
+
   return true;
 }
 

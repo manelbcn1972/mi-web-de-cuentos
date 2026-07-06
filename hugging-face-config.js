@@ -5,18 +5,18 @@
 // Esta solución usa Hugging Face API que es GRATIS
 // con suficientes créditos para generar miles de imágenes.
 //
-// INSTRUCCIONES:
-// 1. Ve a https://huggingface.co/settings/tokens
-// 2. Crea un nuevo token de acceso (hazlo PRIVADO)
-// 3. Copia el token y pégalo abajo
-// 4. ¡Listo! Ya puedes generar imágenes gratis
+// El token de Hugging Face vive en el servidor (Supabase Edge Function
+// "hf-image-proxy"), NUNCA en este archivo ni en el navegador. Si necesitas
+// cambiar el token, hazlo en Supabase → Edge Functions → Secrets.
 
 window.huggingFaceConfig = {
-  // 🔑 TU TOKEN DE HUGGING FACE (obtenlo en https://huggingface.co/settings/tokens)
-  apiKey: 'hf_YOUR_TOKEN_HERE', // ← REEMPLAZA CON TU TOKEN
-  
-  // URL del modelo de Stable Diffusion (Libre & Gratis)
-  modelUrl: 'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-3.5-large',
+  // 🔒 Ya NO hace falta ningún token aquí. Las imágenes se generan a través
+  // de un proxy (Supabase Edge Function) que guarda el token en el servidor.
+  proxyUrl: 'https://cjitydjdrktvbciwapvl.supabase.co/functions/v1/hf-image-proxy',
+
+  // Clave pública (anon) de Supabase — esto SÍ es seguro exponerlo en cliente,
+  // está diseñado para ello y no da acceso a nada sensible.
+  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqaXR5ZGpkcmt0dmJjaXdhcHZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5OTI3NjIsImV4cCI6MjA4NjU2ODc2Mn0._3QbNo8h3Mhy9TGW_W2MJs4Cbte1I4ZNgpXENzO4LNg',
   
   // Configuración de caché (guarda imágenes generadas para NO regenerarlas)
   cacheEnabled: true,
